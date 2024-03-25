@@ -164,3 +164,7 @@ cython_debug/
 timescaledb/
 # Ignore local data directory for the analyzer service
 data/
+
+# VS Code
+.metals/
+.vscode/

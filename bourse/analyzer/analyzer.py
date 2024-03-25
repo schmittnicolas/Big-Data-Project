@@ -9,12 +9,6 @@ db = tsdb.TimescaleStockMarketModel('bourse', 'ricou', 'db', 'monmdp')        # 
 #db = tsdb.TimescaleStockMarketModel('bourse', 'ricou', 'localhost', 'monmdp') # outside docker
 
 def store_file(name, website):
-
-    cwd = os.getcwd()
-    print(os.listdir())
-    print(os.listdir('data/'))
-    print(os.listdir('data/boursorama/'))
-
     print(cwd)
     #if db.is_file_done(name):
         # return
