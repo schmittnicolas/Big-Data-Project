@@ -159,7 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Docker
+# Docker Compose
 # Ignore local TimescaleDB data directory
 timescaledb/
 # Ignore local data directory for the analyzer service
