@@ -17,7 +17,7 @@ def store_file(name, website):
 
     print(cwd)
     #if db.is_file_done(name):
-        #return
+        # return
     if website.lower() == "boursorama":
         try:
             df = pd.read_pickle("./data/boursorama/" + name)  # is this dir ok for you ?
