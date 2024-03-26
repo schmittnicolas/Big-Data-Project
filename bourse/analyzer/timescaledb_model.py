@@ -238,9 +238,48 @@ class TimescaleStockMarketModel:
         '''
         Check if a file has already been included in the DB
         '''
-        return  self.raw_query("SELECT EXISTS ( SELECT 1 FROM file_done WHERE name = '%s' );" % name)
 
+        try:
+            result = self.raw_query("SELECT EXISTS (SELECT 1 FROM file_done WHERE name = \'%s\');" % name)
+            return result[0][0]
+        except Exception as e:
+            self.logger.exception(f"Error while checking file existence: {e}")
+            return False
+            
+    def add_company(self, name, symbol):
+        try:
+            # Check if the symbol already exists in the database
+            existing_symbols = self.raw_query("SELECT symbol FROM companies WHERE symbol = %s;", (symbol,))
+            self.logger.debug(existing_symbols)
+            if existing_symbols:
+                self.logger.warning("Symbol already exists in the database.")
+                return  # Symbol already exists, exit without adding the company
+            
+            # TODO 
+            # Update name if symbol already exist
 
+            # Execute the SQL INSERT statement with the company details
+            self.raw_query("INSERT INTO companies (name, symbol) VALUES (%s, %s);", (name, symbol))
+            
+            self.logger.info("Company added successfully!")
+            
+        except Exception as e:
+            self.logger.exception("Error while adding company: %s" % str(e))
+
+    def add_stock(self, date, value, volume, company_name, company_symbol, market):
+        # TODO
+
+        # GET company id, if company doesn't exists -> INSERT the company in the companies table
+        # INSERT stock in the the stocks table (check for duplicates before inserting)
+
+        pass
+
+    def load_dailystocks():
+        # TODO
+
+        # using data from the database, create the dailystocks dataframe and load it in the database
+
+        pass
 #
 # main
 #

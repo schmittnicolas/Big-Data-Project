@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import sklearn
-import os
+from data_cleaning import clean_data
 
 import timescaledb_model as tsdb
 
@@ -9,18 +9,20 @@ db = tsdb.TimescaleStockMarketModel('bourse', 'ricou', 'db', 'monmdp')        # 
 #db = tsdb.TimescaleStockMarketModel('bourse', 'ricou', 'localhost', 'monmdp') # outside docker
 
 def store_file(name, website):
-    print(cwd)
-    #if db.is_file_done(name):
-        # return
+    if db.is_file_done(name):
+        return
+    
     if website.lower() == "boursorama":
         try:
-            df = pd.read_pickle("./data/boursorama/" + name)  # is this dir ok for you ?
+            df = pd.read_pickle("./data/boursorama/" + name)
             print(df)
         except:
             year = name.split()[1].split("-")[0]
             df = pd.read_pickle("./data/boursorama/" + year + "/" + name)
             print(df)
-        # to be finished
+        
+        df = clean_data(df)
+        print(df.dtypes)
 
 
 if __name__ == '__main__':
