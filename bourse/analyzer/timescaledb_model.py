@@ -4,14 +4,15 @@
 # pipenv install sqlalchemy-timescaledb
 
 import datetime
-import psycopg2
-import pandas as pd
-import sqlalchemy
 
 import mylogging
+import pandas as pd
+import psycopg2
+import sqlalchemy
+
 
 class TimescaleStockMarketModel:
-    """ Bourse model with TimeScaleDB persistence."""
+    """Bourse model with TimeScaleDB persistence."""
 
     def __init__(self, database, user=None, host=None, password=None, port=None):
         """Create a TimescaleStockMarketModel
@@ -26,22 +27,27 @@ class TimescaleStockMarketModel:
 
         self.__database = database
         self.__user = user or database
-        self.__host = host or 'localhost'
+        self.__host = host or "localhost"
         self.__port = port or 5432
-        self.__password = password or ''
+        self.__password = password or ""
         self.__squash = False
-        self.__connection = psycopg2.connect(database=self.__database,
-                                             user=self.__user,
-                                             host=self.__host,
-                                             password=self.__password)
-        self.__engine = sqlalchemy.create_engine(f'timescaledb://{self.__user}:{self.__password}@{self.__host}:{self.__port}/{self.__database}')
+        self.__connection = psycopg2.connect(
+            database=self.__database,
+            user=self.__user,
+            host=self.__host,
+            password=self.__password,
+        )
+        self.__engine = sqlalchemy.create_engine(
+            f"timescaledb://{self.__user}:{self.__password}@{self.__host}:{self.__port}/{self.__database}"
+        )
         self.__nf_cid = {}  # cid from netfonds symbol
         self.__boursorama_cid = {}  # cid from netfonds symbol
         self.__market_id = {}  # id of markets from aliases
 
-        self.logger.info("Setup database generates an error if it exists already, it's ok")
+        self.logger.info(
+            "Setup database generates an error if it exists already, it's ok"
+        )
         self._setup_database()
-
 
     def _setup_database(self):
         try:
@@ -53,19 +59,20 @@ class TimescaleStockMarketModel:
             #
             cursor = self.__connection.cursor()
             # markets (see end for list of makets)
-            cursor.execute('''CREATE SEQUENCE market_id_seq START 1;''')
+            cursor.execute("""CREATE SEQUENCE market_id_seq START 1;""")
             cursor.execute(
-                '''CREATE TABLE markets (
+                """CREATE TABLE markets (
                   id SMALLINT PRIMARY KEY DEFAULT nextval('market_id_seq'),
                   name VARCHAR,
                   alias VARCHAR
-                );''')
+                );"""
+            )
             # company:
             #   - mid : market id
             #
-            cursor.execute('''CREATE SEQUENCE company_id_seq START 1;''')
+            cursor.execute("""CREATE SEQUENCE company_id_seq START 1;""")
             cursor.execute(
-                '''CREATE TABLE companies (
+                """CREATE TABLE companies (
                   id SMALLINT PRIMARY KEY DEFAULT nextval('company_id_seq'),
                   name VARCHAR,
                   mid SMALLINT,
@@ -76,18 +83,22 @@ class TimescaleStockMarketModel:
                   boursorama VARCHAR,
                   pea BOOLEAN,
                   sector INTEGER
-                );''')
+                );"""
+            )
             cursor.execute(
-                '''CREATE TABLE stocks (
+                """CREATE TABLE stocks (
                   date TIMESTAMPTZ,
                   cid SMALLINT,
                   value FLOAT4,
                   volume INT
-                );''')
-            cursor.execute('''SELECT create_hypertable('stocks', by_range('date'));''')
-            cursor.execute('''CREATE INDEX idx_cid_stocks ON stocks (cid, date DESC);''')
+                );"""
+            )
+            cursor.execute("""SELECT create_hypertable('stocks', by_range('date'));""")
             cursor.execute(
-                '''CREATE TABLE daystocks (
+                """CREATE INDEX idx_cid_stocks ON stocks (cid, date DESC);"""
+            )
+            cursor.execute(
+                """CREATE TABLE daystocks (
                   date TIMESTAMPTZ,
                   cid SMALLINT,
                   open FLOAT4,
@@ -95,31 +106,58 @@ class TimescaleStockMarketModel:
                   high FLOAT4,
                   low FLOAT4,
                   volume INT
-                );''')
-            cursor.execute('''SELECT create_hypertable('daystocks', by_range('date'));''')
-            cursor.execute('''CREATE INDEX idx_cid_daystocks ON daystocks (cid, date DESC);''')
+                );"""
+            )
             cursor.execute(
-                '''CREATE TABLE file_done (
+                """SELECT create_hypertable('daystocks', by_range('date'));"""
+            )
+            cursor.execute(
+                """CREATE INDEX idx_cid_daystocks ON daystocks (cid, date DESC);"""
+            )
+            cursor.execute(
+                """CREATE TABLE file_done (
                   name VARCHAR PRIMARY KEY
-                );''')
+                );"""
+            )
             cursor.execute(
-                '''CREATE TABLE tags (
+                """CREATE TABLE tags (
                   name VARCHAR PRIMARY KEY,
                   value VARCHAR
-                );''')
+                );"""
+            )
             # let insert known market
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (1,'NYSE Euronext','euronx');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (2,'London Stock Exchange','lse');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (3,'Bourse Italienne','milano');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (4,'Bourse Allemande','dbx');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (5,'Bourse Espagnole','mercados');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (6,'Amsterdam','amsterdam');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (7,'Paris compartiment A','compA');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (8,'Paris compartiment B','compB');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (9,'Bourse Allemande','xetra');")
-            cursor.execute("INSERT INTO markets (id, name, alias) VALUES (10,'Bruxelle','bruxelle');")
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (1,'NYSE Euronext','euronx');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (2,'London Stock Exchange','lse');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (3,'Bourse Italienne','milano');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (4,'Bourse Allemande','dbx');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (5,'Bourse Espagnole','mercados');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (6,'Amsterdam','amsterdam');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (7,'Paris compartiment A','compA');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (8,'Paris compartiment B','compB');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (9,'Bourse Allemande','xetra');"
+            )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (10,'Bruxelle','bruxelle');"
+            )
         except Exception as e:
-            self.logger.exception('SQL error: %s' % e)
+            self.logger.exception("SQL error: %s" % e)
         self.__connection.commit()
 
     # ------------------------------ public methods --------------------------------
@@ -129,8 +167,8 @@ class TimescaleStockMarketModel:
         if args is None:
             pretty = query
         else:
-            pretty = '%s %% %r' % (query, args)
-        self.logger.debug('SQL: QUERY: %s' % pretty)
+            pretty = "%s %% %r" % (query, args)
+        self.logger.debug("SQL: QUERY: %s" % pretty)
         if cursor is None:
             cursor = self.__connection.cursor()
         cursor.execute(query, args)
@@ -141,20 +179,37 @@ class TimescaleStockMarketModel:
         except:
             pass
 
-    def df_write(self, df, table, args=None, commit=False,
-                 if_exists='append', index=True, index_label=None,
-                 chunksize=1000, dtype=None, method="multi"):
-        '''Write a Pandas dataframe to the Postgres SQL database
+    def df_write(
+        self,
+        df,
+        table,
+        args=None,
+        commit=False,
+        if_exists="append",
+        index=True,
+        index_label=None,
+        chunksize=1000,
+        dtype=None,
+        method="multi",
+    ):
+        """Write a Pandas dataframe to the Postgres SQL database
 
         :param query:
         :param args: arguments for the query
         :param commit: do a commit after writing
         :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_sql.html
-        '''
-        self.logger.debug('df_write')
-        df.to_sql(table, self.__engine,
-                  if_exists=if_exists, index=index, index_label=index_label,
-                  chunksize=chunksize, dtype=dtype, method=method)
+        """
+        self.logger.debug("df_write")
+        df.to_sql(
+            table,
+            self.__engine,
+            if_exists=if_exists,
+            index=index,
+            index_label=index_label,
+            chunksize=chunksize,
+            dtype=dtype,
+            method=method,
+        )
         if commit:
             self.commit()
 
@@ -165,28 +220,46 @@ class TimescaleStockMarketModel:
         if args is None:
             pretty = query
         else:
-            pretty = '%s %% %r' % (query, args)
-        self.logger.debug('SQL: QUERY: %s' % pretty)
+            pretty = "%s %% %r" % (query, args)
+        self.logger.debug("SQL: QUERY: %s" % pretty)
         if cursor is None:
             cursor = self.__connection.cursor()
         cursor.execute(query, args)
         return cursor.fetchall()
 
-    def df_query(self, query, args=None, index_col=None, coerce_float=True, params=None, 
-                 parse_dates=None, columns=None, chunksize=1000, dtype=None):
-        '''Returns a Pandas dataframe from a Postgres SQL query
+    def df_query(
+        self,
+        query,
+        args=None,
+        index_col=None,
+        coerce_float=True,
+        params=None,
+        parse_dates=None,
+        columns=None,
+        chunksize=1000,
+        dtype=None,
+    ):
+        """Returns a Pandas dataframe from a Postgres SQL query
 
         :param query:
         :param args: arguments for the query
         :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_sql.html
         :return: a dataframe
-        '''
+        """
         if args is not None:
             query = query % args
-        self.logger.debug('df_query: %s' % query)
-        return pd.read_sql(query, self.__engine, index_col=index_col, coerce_float=coerce_float, 
-                           params=params, parse_dates=parse_dates, columns=columns, 
-                           chunksize=chunksize, dtype=dtype)
+        self.logger.debug("df_query: %s" % query)
+        return pd.read_sql(
+            query,
+            self.__engine,
+            index_col=index_col,
+            coerce_float=coerce_float,
+            params=params,
+            parse_dates=parse_dates,
+            columns=columns,
+            chunksize=chunksize,
+            dtype=dtype,
+        )
 
     # system methods
 
@@ -197,7 +270,7 @@ class TimescaleStockMarketModel:
     # write here your methods which SQL requests
 
     def search_company_id(self, name, getmax=1, strict=False):
-        '''
+        """
         Try to find the id of a company in our database.
 
         :param name: name of the company (or part of)
@@ -212,21 +285,33 @@ class TimescaleStockMarketModel:
         0
         >>> db.search_company_id("Should not exist !!")
         0
-        '''
+        """
         if getmax > 1:
-            res = self.raw_query('SELECT (id) FROM companies WHERE LOWER(name) LIKE LOWER(%s)',
-                                 ('%' + name + '%',))
+            res = self.raw_query(
+                "SELECT (id) FROM companies WHERE LOWER(name) LIKE LOWER(%s)",
+                ("%" + name + "%",),
+            )
         else:
-            res = self.raw_query('SELECT (id) FROM companies WHERE name = %s', (name,))
+            res = self.raw_query("SELECT (id) FROM companies WHERE name = %s", (name,))
             if len(res) == 0 and not strict:
-                res = self.raw_query('SELECT (id) FROM companies WHERE LOWER(name) LIKE LOWER(%s)', (name,))
+                res = self.raw_query(
+                    "SELECT (id) FROM companies WHERE LOWER(name) LIKE LOWER(%s)",
+                    (name,),
+                )
                 if len(res) == 0:
-                    res = self.raw_query('SELECT (id) FROM companies WHERE name LIKE %s', (name + '%',))
+                    res = self.raw_query(
+                        "SELECT (id) FROM companies WHERE name LIKE %s", (name + "%",)
+                    )
                     if len(res) == 0:
-                        res = self.raw_query('SELECT (id) FROM companies WHERE name LIKE %s', ('%' + name + '%',))
+                        res = self.raw_query(
+                            "SELECT (id) FROM companies WHERE name LIKE %s",
+                            ("%" + name + "%",),
+                        )
                         if len(res) == 0:
-                            res = self.raw_query('SELECT (id) FROM companies WHERE LOWER(name) LIKE LOWER(%s)',
-                                                 ('%' + name + '%',))
+                            res = self.raw_query(
+                                "SELECT (id) FROM companies WHERE LOWER(name) LIKE LOWER(%s)",
+                                ("%" + name + "%",),
+                            )
         if len(res) == 1:
             return res[0][0]
         elif len(res) > 1 and len(res) < getmax:
@@ -235,44 +320,92 @@ class TimescaleStockMarketModel:
             return 0
 
     def is_file_done(self, name):
-        '''
+        """
         Check if a file has already been included in the DB
-        '''
+        """
 
         try:
-            result = self.raw_query("SELECT EXISTS (SELECT 1 FROM file_done WHERE name = \'%s\');" % name)
+            result = self.raw_query(
+                "SELECT EXISTS (SELECT 1 FROM file_done WHERE name = '%s');" % name
+            )
             return result[0][0]
         except Exception as e:
             self.logger.exception(f"Error while checking file existence: {e}")
             return False
-            
-    def add_company(self, name, symbol):
+
+    def get_company_id(self, symbol):
         try:
-            # Check if the symbol already exists in the database
-            existing_symbols = self.raw_query("SELECT symbol FROM companies WHERE symbol = %s;", (symbol,))
-            self.logger.debug(existing_symbols)
-            if existing_symbols:
-                self.logger.warning("Symbol already exists in the database.")
-                return  # Symbol already exists, exit without adding the company
-            
-            # TODO 
-            # Update name if symbol already exist
-
-            # Execute the SQL INSERT statement with the company details
-            self.raw_query("INSERT INTO companies (name, symbol) VALUES (%s, %s);", (name, symbol))
-            
-            self.logger.info("Company added successfully!")
-            
+            company_id = self.raw_query(
+                "SELECT id FROM companies where symbol = %s;", (symbol,)
+            )
+            if company_id:
+                self.logger.info("Company found")
+                return company_id[0][0]
+            else:
+                self.logger.info("Company not found")
+                return None
         except Exception as e:
-            self.logger.exception("Error while adding company: %s" % str(e))
+            self.logger.exception("Error while getting company: %s" % str(e))
 
-    def add_stock(self, date, value, volume, company_name, company_symbol, market):
-        # TODO
+    def add_comapanies(self, companies_df):
+        try:
+            # Get existing symbols from the companies table
+            existing_symbols_query = "SELECT symbol FROM companies;"
+            existing_symbols_result = self.raw_query(existing_symbols_query)
+            existing_symbols = {row[0] for row in existing_symbols_result}
 
-        # GET company id, if company doesn't exists -> INSERT the company in the companies table
-        # INSERT stock in the the stocks table (check for duplicates before inserting)
+            # Filter out companies with existing symbols
+            new_companies_df = companies_df[
+                ~companies_df["symbol"].isin(existing_symbols)
+            ]
 
-        pass
+            # Insert new companies into the companies table using df_write function
+            if not new_companies_df.empty:
+                self.df_write(
+                    new_companies_df,
+                    table="companies",
+                    commit=True,
+                    if_exists="append",
+                    index=False,
+                )
+                self.logger.info("New companies added successfully!")
+            else:
+                self.logger.info("No new companies to add.")
+
+        except Exception as e:
+            self.logger.exception("Error while adding companies: %s" % str(e))
+
+    def add_stocks(self, stocks_df):
+        try:
+            # Check for duplicates based on the combination of date and cid
+            existing_stocks_query = "SELECT date, cid FROM stocks;"
+            existing_stocks_result = self.raw_query(existing_stocks_query)
+            existing_stocks = {(row[0], row[1]) for row in existing_stocks_result}
+
+            # Filter out stocks that are already in the database
+            new_stocks_df = stocks_df[
+                ~stocks_df.set_index(["date", "cid"]).index.isin(existing_stocks)
+            ]
+
+            if not new_stocks_df.empty:
+                self.df_write(
+                    new_stocks_df,
+                    table="stocks",
+                    commit=True,
+                    if_exists="append",
+                    index=False,
+                )
+                self.logger.info("New stocks added successfully!")
+            else:
+                self.logger.info("No new stocks to add.")
+
+        except Exception as e:
+            self.logger.exception("Error while adding stocks: %s" % str(e))
+
+    def add_dfs_to_sql(self, companies_df, stocks_df):
+        self.add_comapanies(companies_df)
+        stocks_df["cid"] = stocks_df["cid"].apply(self.get_company_id)
+        self.add_stocks(stocks_df)
 
     def load_dailystocks():
         # TODO
@@ -280,6 +413,8 @@ class TimescaleStockMarketModel:
         # using data from the database, create the dailystocks dataframe and load it in the database
 
         pass
+
+
 #
 # main
 #
@@ -288,5 +423,5 @@ if __name__ == "__main__":
     import doctest
 
     # timescaleDB shoul run, possibly in Docker
-    db = TimescaleStockMarketModel('bourse', 'ricou', 'localhost', 'monmdp')
+    db = TimescaleStockMarketModel("bourse", "ricou", "localhost", "monmdp")
     doctest.testmod()
