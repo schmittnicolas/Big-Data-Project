@@ -362,6 +362,7 @@ class TimescaleStockMarketModel:
             else:
                 table_name = table.name
 
+            
             sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
             cur.copy_expert(sql=sql, file=s_buf)
 
@@ -372,7 +373,7 @@ class TimescaleStockMarketModel:
         args=None,
         commit=False,
         if_exists="append",
-        index=True,
+        index=False,
         index_label=None,
         chunksize=1000,
         dtype=None,

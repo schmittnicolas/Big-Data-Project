@@ -35,6 +35,12 @@ def store_file(type: str, years: str):
     companies = data.get_companies()
     stocks = data.get_stocks()
 
+    # db.store_data(data_per_day, companies, stocks)
+
+    db.insert_df_to_table(df = companies, table='companies', if_exists='replace')
+    db.insert_df_to_table(df = stocks, table='stocks')
+    db.insert_df_to_table(df = data_per_day, table='data_per_day')
+
     return data_per_day, companies, stocks
 
 

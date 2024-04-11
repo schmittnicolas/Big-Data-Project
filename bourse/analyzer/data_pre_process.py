@@ -67,7 +67,8 @@ class DataPreProcessor:
 
     def get_stocks(self) -> pd.DataFrame:
         df_stocks = self.df.copy()
-        columns_to_keep = ['date', 'last', 'volume', 'cid']
+        df_stocks['value'] = df_stocks['last']
+        columns_to_keep = ['date', 'value', 'volume', 'cid']
         df_stocks.reset_index(inplace=True)
         df_stocks = df_stocks[columns_to_keep]
         return df_stocks
