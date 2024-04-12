@@ -9,7 +9,9 @@ import timescaledb_model as tsdb
 from data_pre_process import DataPreProcessor
 
 # db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-db = tsdb.TimescaleStockMarketModel('bourse', 'ricou', 'localhost', 'monmdp') # outside docker
+db = tsdb.TimescaleStockMarketModel(
+    "bourse", "ricou", "localhost", "monmdp"
+)  # outside docker
 
 
 def store_file(type: str, years: str):
@@ -24,30 +26,25 @@ def store_file(type: str, years: str):
             year = name.split()[1].split("-")[0]
             df = pd.read_pickle("./data/boursorama/" + year + "/" + name)
     """
-    file_pattern = f"Big-Data-Project/bourse/data/boursorama/{years}/{type}*"
-    raw_data = pd.concat({
-        dateutil.parser.parse(f.split(f"{type} ")[1][:-4]): pd.read_pickle(f)
-        for f in glob.glob(file_pattern)
-    })
+    file_pattern = (
+        f"Big-Data-Project/bourse/data/boursorama/{years}/{type}*"  # outside docker
+    )
+    # file_pattern = f"./data/boursorama/{years}/{type}*"
+    raw_data = pd.concat(
+        {
+            dateutil.parser.parse(f.split(f"{type} ")[1][:-4]): pd.read_pickle(f)
+            for f in glob.glob(file_pattern)
+        }
+    )
 
-    data: DataPreProcessor = DataPreProcessor(raw_data, type)
-    data_per_day = data.get_day_stocks()
-    companies = data.get_companies()
-    stocks = data.get_stocks()
+    data: DataPreProcessor = DataPreProcessor(raw_data, type, db)
 
-    # db.store_data(data_per_day, companies, stocks)
-
-    db.insert_df_to_table(df = companies, table='companies', if_exists='replace')
-    db.insert_df_to_table(df = stocks, table='stocks')
-    db.insert_df_to_table(df = data_per_day, table='data_per_day')
-
-    return data_per_day, companies, stocks
-
+    data.insert_companies()
+    data.insert_day_stocks()
+    data.insert_stocks()
 
 
 if __name__ == "__main__":
-    element_1, element_2, element_3 = store_file('compA', '2019')
-    element_1.to_csv('data_per_day.csv')
-    element_2.to_csv('companies.csv')
-    element_3.to_csv('stocks.csv')
-    print("Done")
+    print("Started Analyzer")
+    store_file("compA", "2019")
+    print("done")

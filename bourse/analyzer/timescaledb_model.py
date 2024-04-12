@@ -6,6 +6,7 @@
 import csv
 import datetime
 from io import StringIO
+import time
 
 import mylogging
 import pandas as pd
@@ -362,7 +363,6 @@ class TimescaleStockMarketModel:
             else:
                 table_name = table.name
 
-            
             sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
             cur.copy_expert(sql=sql, file=s_buf)
 
@@ -375,7 +375,7 @@ class TimescaleStockMarketModel:
         if_exists="append",
         index=False,
         index_label=None,
-        chunksize=1000,
+        chunksize=2000,
         dtype=None,
     ):
         """Write a Pandas dataframe to the Postgres SQL database
@@ -385,6 +385,8 @@ class TimescaleStockMarketModel:
         :param commit: do a commit after writing
         :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_sql.html
         """
+        start_time = time.time()  # get start time before insert
+
         self.logger.debug("df_write")
         df.to_sql(
             table,
@@ -398,16 +400,31 @@ class TimescaleStockMarketModel:
         )
         if commit:
             self.commit()
+        end_time = time.time()  # get end time after insert
+        total_time = end_time - start_time  # calculate the time
+        print(f"Insert time: {total_time} seconds")  # print time
+
+    def get_company_id(self, symbol):
+        try:
+            company_id = self.raw_query(
+                "SELECT id FROM companies where symbol = %s;", (symbol,)
+            )
+            if company_id:
+                self.logger.info("Company found")
+                return company_id[0][0]
+            else:
+                self.logger.info("Company not found")
+                return None
+        except Exception as e:
+            self.logger.exception("Error while getting company: %s" % str(e))
 
 
 #
 # main
 #
-"""
 if __name__ == "__main__":
     import doctest
 
-    # timescaleDB shoul run, possibly in Docker
-    db = TimescaleStockMarketModel("bourse", "ricou", "localhost", "monmdp")
-    doctest.testmod()
-"""
+    db = TimescaleStockMarketModel(
+        "bourse", "ricou", "localhost", "monmdp"
+    )  # Outside docker to
