@@ -8,10 +8,10 @@ import sklearn
 import timescaledb_model as tsdb
 from data_pre_process import DataPreProcessor
 
-# db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-db = tsdb.TimescaleStockMarketModel(
-    "bourse", "ricou", "localhost", "monmdp"
-)  # outside docker
+db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
+# db = tsdb.TimescaleStockMarketModel(
+#   "bourse", "ricou", "localhost", "monmdp"
+#)  # outside docker
 
 
 def store_file(type: str, years: str):
@@ -27,7 +27,7 @@ def store_file(type: str, years: str):
             df = pd.read_pickle("./data/boursorama/" + year + "/" + name)
     """
     file_pattern = (
-        f"Big-Data-Project/bourse/data/boursorama/{years}/{type}*"  # outside docker
+        f"./data/boursorama/{years}/{type}*"  # outside docker
     )
     # file_pattern = f"./data/boursorama/{years}/{type}*"
     raw_data = pd.concat(
