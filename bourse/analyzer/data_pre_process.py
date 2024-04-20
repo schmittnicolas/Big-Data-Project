@@ -68,6 +68,8 @@ class DataPreProcessor:
             open=("last", lambda x: (x.iloc[0])),
             close=("last", lambda x: (x.iloc[-1])),
             volume=("volume", lambda x: (x.iloc[-1])),
+            mean=("last",  lambda x: (x.mean())),
+            standard_deviation=("last", lambda x: x.std())
         )
 
         df_per_day.reset_index(inplace=True)
