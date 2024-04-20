@@ -30,7 +30,6 @@ app = dash.Dash(
 )  # , external_stylesheets=external_stylesheets)
 server = app.server
 
-
 # TODO Creer une liste mes symboles
 
 app.layout = html.Div(
