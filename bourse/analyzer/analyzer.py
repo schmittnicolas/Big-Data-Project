@@ -11,7 +11,7 @@ from data_pre_process import DataPreProcessor
 db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
 # db = tsdb.TimescaleStockMarketModel(
 #   "bourse", "ricou", "localhost", "monmdp"
-#)  # outside docker
+# )  # outside docker
 
 
 def store_file(type: str, years: str):
@@ -26,9 +26,7 @@ def store_file(type: str, years: str):
             year = name.split()[1].split("-")[0]
             df = pd.read_pickle("./data/boursorama/" + year + "/" + name)
     """
-    file_pattern = (
-        f"./data/boursorama/{years}/{type}*"  # outside docker
-    )
+    file_pattern = f"./data/boursorama/{years}/{type}*"  # outside docker
     # file_pattern = f"./data/boursorama/{years}/{type}*"
     raw_data = pd.concat(
         {
