@@ -108,7 +108,9 @@ class TimescaleStockMarketModel:
                   close FLOAT4,
                   high FLOAT4,
                   low FLOAT4,
-                  volume INT
+                  volume INT,
+                  mean FLOAT4,
+                  standard_deviation FLOAT4
                 );"""
             )
             cursor.execute(
