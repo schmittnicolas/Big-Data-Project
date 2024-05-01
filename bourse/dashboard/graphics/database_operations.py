@@ -15,7 +15,16 @@ def get_company_data(table_name, company_id, start_date, end_date, engine):
     Returns:
     pandas.DataFrame: A DataFrame containing the fetched data.
     """
-    query = f"SELECT * FROM {table_name} t INNER JOIN companies c ON c.id=t.cid WHERE c.id = %(company_id)s AND t.date BETWEEN %(start_date)s AND %(end_date)s ORDER BY t.date;"
+
+    query = f"""
+        SELECT t.*, c.name AS name, m.name AS market 
+        FROM {table_name} t 
+        INNER JOIN companies c ON c.id=t.cid 
+        INNER JOIN markets m ON m.id=c.mid 
+        WHERE c.id = %(company_id)s 
+        AND t.date BETWEEN %(start_date)s AND %(end_date)s 
+        ORDER BY t.date;
+    """
     df = pd.read_sql_query(
         query,
         engine,
@@ -61,6 +70,6 @@ def get_all_companies(engine):
     Returns:
     pandas.DataFrame: A DataFrame containing all companies.
     """
-    query = "SELECT * FROM companies ORDER BY name;"
+    query = "SELECT c.*, m.name as market FROM companies c INNER JOIN markets m on m.id=c.mid ORDER BY name;"
     df = pd.read_sql_query(query, engine)
     return df
