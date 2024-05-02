@@ -5,19 +5,46 @@ from plotly.offline import iplot
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
+
 def generate_raw_data_table(engine, company_ids, start_date, end_date):
     data = []
     for company_id in company_ids:
-        df = db_ops.get_company_data("daystocks", company_id, start_date, end_date, engine)
+        df = db_ops.get_company_data(
+            "daystocks", company_id, start_date, end_date, engine
+        )
         if not df.empty:
             df = df.rename(columns={"name": "company"})
-            df = df[["date", "open", "high", "low", "close", "volume", "company", "mean", "standard_deviation"]]
+            df = df[
+                [
+                    "date",
+                    "open",
+                    "high",
+                    "low",
+                    "close",
+                    "volume",
+                    "company",
+                    "mean",
+                    "standard_deviation",
+                ]
+            ]
             df = df.fillna(0)
             data.append(df)
 
     if data:
         table_data = pd.concat(data, ignore_index=True)
-        table_data = table_data[["date", "company", "open", "high", "low", "close", "volume", "mean", "standard_deviation"]]
+        table_data = table_data[
+            [
+                "date",
+                "company",
+                "open",
+                "high",
+                "low",
+                "close",
+                "volume",
+                "mean",
+                "standard_deviation",
+            ]
+        ]
         table_data = table_data.sort_values(by=["date", "company"])
         return table_data.to_dict("records")
     else:
@@ -159,5 +186,5 @@ def generate_bollinger_graph(engine, company_id, start_date, end_date, window=30
 
     # Remove range slider; (short time frame)
     fig.update(layout_xaxis_rangeslider_visible=False)
-
+    
     return fig
