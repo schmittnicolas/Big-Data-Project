@@ -1,6 +1,3 @@
-
-import glob
-import os
 import time
 import pandas as pd
 import timescaledb_model as tsdb

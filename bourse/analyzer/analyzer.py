@@ -5,10 +5,7 @@ import os
 import time
 
 import dateutil
-import numpy as np
 import pandas as pd
-import psutil
-import sklearn
 import timescaledb_model as tsdb
 from data_pre_process import insert_day_stocks, insert_stocks, get_day, delete_day, check_days, clean_data
 from companies import insert_companies
@@ -37,8 +34,8 @@ def parallel_read_pickles(matching_files: list[str], max_workers=None) -> pd.Dat
     return raw_data
 
 def companies(db: tsdb.TimescaleStockMarketModel):
-    file_pattern = "Big-Data-Project/bourse/data/boursorama/**/*16:0*"
-    file_pattern1 = "Big-Data-Project/bourse/data/boursorama/**/*9:0*"
+    file_pattern = "./bourse/data/boursorama/**/*16:0*"
+    file_pattern1 = "./bourse/data/boursorama/**/*9:0*"
 
     # Récupérer les fichiers correspondants au pattern
     matching_files0 = glob.glob(file_pattern, recursive=True)
@@ -51,9 +48,9 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 
 
-def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_size = 100):
+def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_size = 50):
     processed_files = set()  # Initialize an empty set to store processed file names
-    file_pattern = "Big-Data-Project/bourse/data/boursorama/**/*"
+    file_pattern = "./bourse/data/boursorama/2019/*"
 
     # Récupérer les fichiers correspondants au pattern
     file_list = glob.glob(file_pattern, recursive=True)
