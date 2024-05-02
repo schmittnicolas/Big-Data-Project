@@ -8,7 +8,7 @@ def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict):
     df["last"] = (
         df["last"]
         .astype(str)
-        .replace({" ": "", "\(c\)": "", "\(s\)": ""}, regex=True)
+        .replace({" ": "", "(c)": "", "(s)": ""}, regex=True)
         .astype(float)
         .round(2)
     )
