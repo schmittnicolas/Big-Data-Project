@@ -1,4 +1,5 @@
-FROM ubuntu:latest
+#FROM ubuntu:latest
+FROM python:3-bookworm
 MAINTAINER Olivier Ricou <olivier@ricou.eu.org>
 
 # If you have a web spider getting data, then you can run 
