@@ -9,15 +9,14 @@ import pandas as pd
 import timescaledb_model as tsdb
 from data_pre_process import insert_day_stocks, insert_stocks, get_day, delete_day, check_days, clean_data
 from companies import insert_companies
-from tqdm import tqdm
 
 
 
 
-#db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-db = tsdb.TimescaleStockMarketModel(
-  "bourse", "ricou", "localhost", "monmdp"
-)  # outside docker
+db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
+#db = tsdb.TimescaleStockMarketModel(
+#  "bourse", "ricou", "localhost", "monmdp"
+#)  # outside docker
 
 
 def read_pickle(file_path: str):
@@ -29,13 +28,13 @@ def read_pickle(file_path: str):
 def parallel_read_pickles(matching_files: list[str], max_workers=None) -> pd.DataFrame:
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(read_pickle, f) for f in matching_files]
-        raw_data = pd.concat({timestamp: data for timestamp, data in tqdm([future.result() for future in futures])}, 
+        raw_data = pd.concat({timestamp: data for timestamp, data in [future.result() for future in futures]}, 
                              names=['timestamp', 'symbol_index'])
     return raw_data
 
 def companies(db: tsdb.TimescaleStockMarketModel):
-    file_pattern = "./bourse/data/boursorama/**/*16:0*"
-    file_pattern1 = "./bourse/data/boursorama/**/*9:0*"
+    file_pattern = "./data/boursorama/**/*16:0*"
+    file_pattern1 = "./data/boursorama/**/*9:0*"
 
     # Récupérer les fichiers correspondants au pattern
     matching_files0 = glob.glob(file_pattern, recursive=True)
@@ -50,7 +49,7 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_size = 50):
     processed_files = set()  # Initialize an empty set to store processed file names
-    file_pattern = "./bourse/data/boursorama/2019/*"
+    file_pattern = "./data/boursorama/2019/*"
 
     # Récupérer les fichiers correspondants au pattern
     file_list = glob.glob(file_pattern, recursive=True)
