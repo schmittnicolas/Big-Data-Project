@@ -38,4 +38,5 @@ ADD apps.tgz .
 # CMD service cron start  && \
 #     tail -f /var/log/cron.log
 
-CMD python3 analyzer.py
+#CMD python3 analyzer.py
+CMD python3 -m cProfile -o /home/bourse/profile.prof analyzer.py
