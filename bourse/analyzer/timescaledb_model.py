@@ -427,9 +427,9 @@ class TimescaleStockMarketModel:
 #
 # main
 #
-if __name__ == "__main__":
-    import doctest
+# if __name__ == "__main__":
+#     import doctest
 
-    db = TimescaleStockMarketModel(
-        "bourse", "ricou", "localhost", "monmdp"
-    )  # Outside docker to
+#     db = TimescaleStockMarketModel(
+#         "bourse", "ricou", "localhost", "monmdp"
+#     )  # Outside docker to
