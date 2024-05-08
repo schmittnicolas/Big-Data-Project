@@ -44,13 +44,15 @@ time_intervals = {
     "10Y": 3650,
 }
 
-time_interval_options = [{"label": key, "value": value} for key, value in time_intervals.items()]
+time_interval_options = [
+    {"label": key, "value": value} for key, value in time_intervals.items()
+]
 
 app = dash.Dash(
     __name__,
-    title="Bourse",
+    title="BOURSE",
     suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.QUARTZ],
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 
 server = app.server
@@ -58,7 +60,7 @@ server = app.server
 app.layout = html.Div(
     [
         html.H1(
-            children="Bourse", style={"textAlign": "center", "marginBottom": "30px"}
+            children="BOURSE", style={"textAlign": "center", "marginBottom": "30px"}
         ),
         html.Div(
             [
@@ -84,7 +86,7 @@ app.layout = html.Div(
                             options=time_interval_options,
                             value=1,
                             clearable=False,
-                            style={"width": "150px !important", "marginRight": "20px"},
+                            style={"marginRight": "20px"},
                         ),
                         dcc.DatePickerSingle(
                             id="date-picker-single",
@@ -92,7 +94,11 @@ app.layout = html.Div(
                             display_format="YYYY-MM-DD",
                         ),
                     ],
-                    style={"marginBottom": "20px", "display": "flex", "alignItems": "center"},
+                    style={
+                        "marginBottom": "20px",
+                        "display": "flex",
+                        "alignItems": "center",
+                    },
                 ),
                 html.Div(
                     [
@@ -118,11 +124,15 @@ app.layout = html.Div(
                             options=[],
                             value=None,
                             searchable=True,
-                            placeholder="Select a company...",
+                            placeholder="Select a company for Bollinger Bands...",
                             style={"width": "300px"},
                         ),
                     ],
-                    style={"marginBottom": "20px", "display": "flex", "alignItems": "center"},
+                    style={
+                        "marginBottom": "20px",
+                        "display": "flex",
+                        "alignItems": "center",
+                    },
                 ),
             ],
             style={"display": "flex", "justifyContent": "space-between"},
@@ -153,35 +163,41 @@ app.layout = html.Div(
                             ],
                             style={"width": "100%"},
                         ),
-                        dcc.Graph(
-                            id="graph-content",
-                            config={"displayModeBar": False},
-                            style={"height": "500px"},
-                        )
+                        dcc.Loading(
+                            dcc.Graph(
+                                id="graph-content",
+                                config={"displayModeBar": False},
+                                style={"height": "500px"},
+                            ),
+                            type="graph",
+                        ),
                     ],
                     style={"flex": 3, "marginRight": "20px"},
                 ),
                 html.Div(
                     [
-                        dash_table.DataTable(
-                            id="raw-data-table",
-                            columns=[
-                                {"name": col, "id": col}
-                                for col in [
-                                    "date",
-                                    "company",
-                                    "open",
-                                    "high",
-                                    "low",
-                                    "close",
-                                    "volume",
-                                    "mean",
-                                    "std",
-                                ]
-                            ],
-                            style_cell={"textAlign": "left"},
-                            style_table={"overflowY": "scroll", "maxHeight": "500px"},
-                        )
+                            dash_table.DataTable(
+                                id="raw-data-table",
+                                columns=[
+                                    {"name": col, "id": col}
+                                    for col in [
+                                        "date",
+                                        "company",
+                                        "open",
+                                        "high",
+                                        "low",
+                                        "close",
+                                        "volume",
+                                        "mean",
+                                        "std",
+                                    ]
+                                ],
+                                style_cell={"textAlign": "left"},
+                                style_table={
+                                    "overflowY": "scroll",
+                                    "maxHeight": "500px",
+                                },
+                            ),
                     ],
                     style={"flex": 2},
                 ),
@@ -191,6 +207,7 @@ app.layout = html.Div(
     ],
     style={"margin": "0 auto", "padding": "20px"},
 )
+
 
 @app.callback(
     [
@@ -220,7 +237,7 @@ def update_graph(
     end_date,
     single_date,
     time_interval,
-):      
+):
     if selected_market == "all":
         filtered_companies = df_companies
     else:
@@ -252,12 +269,15 @@ def update_graph(
             engine, company_ids, start_date, end_date
         )
     elif graph_type == "bollinger":
+        if selected_company_id is None and company_ids:
+            selected_company_id = company_ids[0]
         figure = stocks.generate_bollinger_graph(
             engine, selected_company_id, start_date, end_date
         )
 
     raw_data = stocks.generate_raw_data_table(engine, company_ids, start_date, end_date)
     return figure, raw_data, selected_company_options
+
 
 @app.callback(
     Output("date-picker-range", "disabled"),
