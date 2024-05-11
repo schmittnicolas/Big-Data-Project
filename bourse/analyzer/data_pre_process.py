@@ -1,14 +1,21 @@
 import pandas as pd
 import timescaledb_model as tsdb
+import re
+from companies import insert_companies
 
+def remove_non_numeric(x: str):
+    return re.sub(r"[() cs]+", "", x)
 
-
-def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict):
+def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict, db: tsdb.TimescaleStockMarketModel):
     df["cid"] = df.index.get_level_values(1).map(symbol_cid_mapping)
+    missing_value = df[df["cid"].isna()]
+    if len(missing_value) > 0:
+        missing_companies = missing_value.groupby("symbol").agg(name=(("name", lambda x: x.iloc[0])))
+        misising_companies_cid = insert_companies(missing_companies, db)
+        df.loc[df["cid"].isna(), "cid"] = df.loc[df["cid"].isna(), "symbol"].map(misising_companies_cid)
     df["last"] = (
         df["last"]
-        .astype(str)
-        .replace({" ": "", "(c)": "", "(s)": ""}, regex=True)
+        .apply(remove_non_numeric)
         .astype(float)
         .round(2)
     )
