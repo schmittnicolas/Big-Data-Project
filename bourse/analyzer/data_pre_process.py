@@ -15,6 +15,7 @@ def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict, db: tsdb.TimescaleSto
         df.loc[df["cid"].isna(), "cid"] = df.loc[df["cid"].isna(), "symbol"].map(misising_companies_cid)
     df["last"] = (
         df["last"]
+        .astype(str)
         .apply(remove_non_numeric)
         .astype(float)
         .round(2)

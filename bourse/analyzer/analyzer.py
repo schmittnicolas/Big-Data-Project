@@ -14,9 +14,9 @@ from companies import insert_companies
 
 
 db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-#db = tsdb.TimescaleStockMarketModel(
+# db = tsdb.TimescaleStockMarketModel(
 #  "bourse", "ricou", "localhost", "monmdp"
-#)  # outside docker
+# )  # outside docker
 
 
 def read_pickle(file_path: str):
@@ -64,7 +64,7 @@ def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_s
 
         combined_df = parallel_read_pickles(batch_files, max_workers=os.cpu_count())
         combined_df["date"] = combined_df.index.get_level_values(0).strftime("%Y-%m-%d")
-        combined_df = clean_data(combined_df, symbol_cid_mapping)
+        combined_df = clean_data(combined_df, symbol_cid_mapping, db)
 
         insert_stocks(combined_df, db)
 
