@@ -108,7 +108,7 @@ class TimescaleStockMarketModel:
                   close FLOAT4,
                   high FLOAT4,
                   low FLOAT4,
-                  volume INT,
+                  volume BIGINT,
                   mean FLOAT4,
                   standard_deviation FLOAT4
                 );"""
@@ -375,13 +375,9 @@ class TimescaleStockMarketModel:
         self,
         df,
         table,
-        args=None,
         commit=False,
         if_exists="append",
         index=False,
-        index_label=None,
-        chunksize=2000,
-        dtype=None,
     ):
         """Write a Pandas dataframe to the Postgres SQL database
 
@@ -398,9 +394,6 @@ class TimescaleStockMarketModel:
             self.__engine,
             if_exists=if_exists,
             index=index,
-            index_label=index_label,
-            chunksize=chunksize,
-            dtype=dtype,
             method=self.psql_insert_copy,
         )
         if commit:

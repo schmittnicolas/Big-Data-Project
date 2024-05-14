@@ -13,10 +13,10 @@ from companies import insert_companies
 
 
 
-db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-# db = tsdb.TimescaleStockMarketModel(
-#  "bourse", "ricou", "localhost", "monmdp"
-# )  # outside docker
+# db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
+db = tsdb.TimescaleStockMarketModel(
+ "bourse", "ricou", "localhost", "monmdp"
+)  # outside docker
 
 
 def read_pickle(file_path: str):
@@ -47,9 +47,9 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 
 
-def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_size = 50):
+def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int], batch_size = 100):
     processed_files = set()  # Initialize an empty set to store processed file names
-    file_pattern = "./data/boursorama/2019/*"
+    file_pattern = "./data/boursorama/*/*"
 
     # Récupérer les fichiers correspondants au pattern
     file_list = glob.glob(file_pattern, recursive=True)
@@ -64,7 +64,10 @@ def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_s
 
         combined_df = parallel_read_pickles(batch_files, max_workers=os.cpu_count())
         combined_df["date"] = combined_df.index.get_level_values(0).strftime("%Y-%m-%d")
-        combined_df = clean_data(combined_df, symbol_cid_mapping, db)
+        combined_df, symbol_cid_mapping_updated = clean_data(combined_df, symbol_cid_mapping, db)
+
+        if symbol_cid_mapping_updated != None:
+            symbol_cid_mapping.update(symbol_cid_mapping_updated)
 
         insert_stocks(combined_df, db)
 
@@ -77,7 +80,6 @@ def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_s
             insert = get_day(df_days, days)
             df_days = delete_day(df_days, days)
             insert_day_stocks(insert, db)
-            print(f"Inserting {days} days")
 
         # Add processed file names to the set
         processed_files.update(batch_files)
@@ -88,12 +90,11 @@ def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict, batch_s
     end_time = time.time()
     total_time = end_time - start_time
     
-    print(f"Processed {len(processed_files)} files in {total_time:.2f} seconds.")
+    print(f"Processed {len(processed_files)} files in {total_time:.2f} seconds for {len(symbol_cid_mapping)} companies.")
 
 
 if __name__ == "__main__":
     print("Started Analyzer")
-    t = companies(db)
+    t: dict[str, int] = companies(db)
     stocks(db, t)
-    
-    
+    print("Finished Analyzer")
