@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+from sqlalchemy import Engine
 import timescaledb_model as tsdb
 import re
 from companies import insert_companies
@@ -28,7 +30,7 @@ def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict[str, int],
     
     return df, misising_companies_cid 
 
-def insert_day_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> pd.DataFrame:
+def insert_day_stocks(df: pd.DataFrame, conn) -> pd.DataFrame:
     df_per_day = df.groupby(["symbol", "date"]).agg(
         low=("last", "min"),
         high=("last", "max"),
@@ -41,9 +43,9 @@ def insert_day_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> p
     )  
     df_per_day.reset_index(inplace=True)
     columns_to_keep = ["date", "high", "low", "open", "close", "volume", "cid", "mean", "standard_deviation"]
-    db.insert_df_to_table(df=df_per_day[columns_to_keep], table="daystocks")
+    tsdb.insert_df_to_table(df=df_per_day[columns_to_keep], table="daystocks", engine=conn)
 
-def insert_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> pd.DataFrame:
+def insert_stocks(df: pd.DataFrame, conn) -> pd.DataFrame:
     df_stocks = df.rename(columns={"last": "value"})
 
     columns_to_keep = ["date", "value", "volume", "cid"]
@@ -51,7 +53,7 @@ def insert_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> pd.Da
     df_stocks.drop(columns=['date'], inplace=True)
     df_stocks = df_stocks.rename(columns={"timestamp": "date"})
     df_stocks = df_stocks[columns_to_keep]
-    db.insert_df_to_table(df=df_stocks[columns_to_keep], table="stocks")
+    tsdb.insert_df_to_table(df=df_stocks[columns_to_keep], table="stocks", engine=conn)
 
 
 
@@ -65,3 +67,6 @@ def delete_day(df: pd.DataFrame, days: list[str]):
 def get_day(df: pd.DataFrame, days: list[str]):
     df = df[df['date'].isin(days)]
     return df
+
+def split_dataframe(df: pd.DataFrame, num_splits: int):
+    return np.array_split(df, num_splits)

@@ -6,6 +6,7 @@
 import csv
 import datetime
 from io import StringIO
+import os
 import time
 
 import mylogging
@@ -169,6 +170,9 @@ class TimescaleStockMarketModel:
         self.__connection.commit()
 
     # ------------------------------ public methods --------------------------------
+    
+    def get_engine(self):
+        return self.__engine
 
     def execute(self, query, args=None, cursor=None, commit=False):
         """Send a Postgres SQL command. No return"""
@@ -342,65 +346,7 @@ class TimescaleStockMarketModel:
             self.logger.exception(f"Error while checking file existence: {e}")
             return False
 
-    def psql_insert_copy(self, table, conn, keys, data_iter):
-        """
-        Execute SQL statement inserting data
-
-        Parameters
-        ----------
-        table : pandas.io.sql.SQLTable
-        conn : sqlalchemy.engine.Engine or sqlalchemy.engine.Connection
-        keys : list of str
-            Column names
-        data_iter : Iterable that iterates the values to be inserted
-        """
-        # gets a DBAPI connection that can provide a cursor
-        dbapi_conn = conn.connection
-        with dbapi_conn.cursor() as cur:
-            s_buf = StringIO()
-            writer = csv.writer(s_buf)
-            writer.writerows(data_iter)
-            s_buf.seek(0)
-
-            columns = ", ".join('"{}"'.format(k) for k in keys)
-            if table.schema:
-                table_name = "{}.{}".format(table.schema, table.name)
-            else:
-                table_name = table.name
-
-            sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
-            cur.copy_expert(sql=sql, file=s_buf)
-
-    def insert_df_to_table(
-        self,
-        df,
-        table,
-        commit=False,
-        if_exists="append",
-        index=False,
-    ):
-        """Write a Pandas dataframe to the Postgres SQL database
-
-        :param query:
-        :param args: arguments for the query
-        :param commit: do a commit after writing
-        :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_sql.html
-        """
-        start_time = time.time()  # get start time before insert
-
-        self.logger.debug("df_write")
-        df.to_sql(
-            table,
-            self.__engine,
-            if_exists=if_exists,
-            index=index,
-            method=self.psql_insert_copy,
-        )
-        if commit:
-            self.commit()
-        end_time = time.time()  # get end time after insert
-        total_time = end_time - start_time  # calculate the time
-        print(f"Insert time: {total_time} seconds")  # print time
+    
 
     def get_company_id(self, symbol):
         try:
@@ -415,6 +361,72 @@ class TimescaleStockMarketModel:
                 return None
         except Exception as e:
             self.logger.exception("Error while getting company: %s" % str(e))
+
+
+
+
+
+
+# ------------------------------ insert methode --------------------------------
+
+def psql_insert_copy(table, conn, keys, data_iter):
+    """
+    Execute SQL statement inserting data
+    Parameters
+    ----------
+    table : pandas.io.sql.SQLTable
+    conn : sqlalchemy.engine.Engine or sqlalchemy.engine.Connection
+    keys : list of str
+        Column names
+    data_iter : Iterable that iterates the values to be inserted
+    """
+    # gets a DBAPI connection that can provide a cursor
+    start_tune = time.time()
+    dbapi_conn = conn.connection
+    with dbapi_conn.cursor() as cur:
+        s_buf = StringIO()
+        writer = csv.writer(s_buf)
+        writer.writerows(data_iter)
+        s_buf.seek(0)
+        columns = ", ".join('"{}"'.format(k) for k in keys)
+        if table.schema:
+            table_name = "{}.{}".format(table.schema, table.name)
+        else:
+            table_name = table.name
+        sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
+        cur.copy_expert(sql=sql, file=s_buf)
+    end_time = time.time()  # get end time after insert
+
+def insert_df_to_table(
+    df,
+    table,
+    engine,
+    commit=False,
+    if_exists="append",
+    index=False,
+    ):
+
+    print(f"begin for {os.getpid()}")
+
+    start_time = time.time()  # get start time before insert
+
+    """Write a Pandas dataframe to the Postgres SQL database
+    :param query:
+    :param args: arguments for the query
+    :param commit: do a commit after writing
+    :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_sql.html
+    """
+
+    df.to_sql(
+        table,
+        engine,
+        if_exists=if_exists,
+        index=index,
+        method=psql_insert_copy,
+    )
+    end_time = time.time()  # get end time after insert
+
+    print(f"Insert {table} of size {len(df)} in:  {end_time - start_time} seconds for {os.getpid()}")  # print time
 
 
 #
