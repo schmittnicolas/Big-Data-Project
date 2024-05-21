@@ -170,6 +170,9 @@ class TimescaleStockMarketModel:
 
     # ------------------------------ public methods --------------------------------
 
+    def get_connection(self):
+        return self.__connection
+
     def execute(self, query, args=None, cursor=None, commit=False):
         """Send a Postgres SQL command. No return"""
         if args is None:
@@ -342,65 +345,65 @@ class TimescaleStockMarketModel:
             self.logger.exception(f"Error while checking file existence: {e}")
             return False
 
-    def psql_insert_copy(self, table, conn, keys, data_iter):
-        """
-        Execute SQL statement inserting data
+    # def psql_insert_copy(self, table, conn, keys, data_iter):
+    #     """
+    #     Execute SQL statement inserting data
 
-        Parameters
-        ----------
-        table : pandas.io.sql.SQLTable
-        conn : sqlalchemy.engine.Engine or sqlalchemy.engine.Connection
-        keys : list of str
-            Column names
-        data_iter : Iterable that iterates the values to be inserted
-        """
-        # gets a DBAPI connection that can provide a cursor
-        dbapi_conn = conn.connection
-        with dbapi_conn.cursor() as cur:
-            s_buf = StringIO()
-            writer = csv.writer(s_buf)
-            writer.writerows(data_iter)
-            s_buf.seek(0)
+    #     Parameters
+    #     ----------
+    #     table : pandas.io.sql.SQLTable
+    #     conn : sqlalchemy.engine.Engine or sqlalchemy.engine.Connection
+    #     keys : list of str
+    #         Column names
+    #     data_iter : Iterable that iterates the values to be inserted
+    #     """
+    #     # gets a DBAPI connection that can provide a cursor
+    #     dbapi_conn = conn.connection
+    #     with dbapi_conn.cursor() as cur:
+    #         s_buf = StringIO()
+    #         writer = csv.writer(s_buf)
+    #         writer.writerows(data_iter)
+    #         s_buf.seek(0)
 
-            columns = ", ".join('"{}"'.format(k) for k in keys)
-            if table.schema:
-                table_name = "{}.{}".format(table.schema, table.name)
-            else:
-                table_name = table.name
+    #         columns = ", ".join('"{}"'.format(k) for k in keys)
+    #         if table.schema:
+    #             table_name = "{}.{}".format(table.schema, table.name)
+    #         else:
+    #             table_name = table.name
 
-            sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
-            cur.copy_expert(sql=sql, file=s_buf)
+    #         sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
+    #         cur.copy_expert(sql=sql, file=s_buf)
 
-    def insert_df_to_table(
-        self,
-        df,
-        table,
-        commit=False,
-        if_exists="append",
-        index=False,
-    ):
-        """Write a Pandas dataframe to the Postgres SQL database
+    # def insert_df_to_table(
+    #     self,
+    #     df,
+    #     table,
+    #     commit=False,
+    #     if_exists="append",
+    #     index=False,
+    # ):
+    #     """Write a Pandas dataframe to the Postgres SQL database
 
-        :param query:
-        :param args: arguments for the query
-        :param commit: do a commit after writing
-        :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_sql.html
-        """
-        start_time = time.time()  # get start time before insert
+    #     :param query:
+    #     :param args: arguments for the query
+    #     :param commit: do a commit after writing
+    #     :param other args: see https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_sql.html
+    #     """
+    #     start_time = time.time()  # get start time before insert
 
-        self.logger.debug("df_write")
-        df.to_sql(
-            table,
-            self.__engine,
-            if_exists=if_exists,
-            index=index,
-            method=self.psql_insert_copy,
-        )
-        if commit:
-            self.commit()
-        end_time = time.time()  # get end time after insert
-        total_time = end_time - start_time  # calculate the time
-        print(f"Insert time: {total_time} seconds")  # print time
+    #     self.logger.debug("df_write")
+    #     df.to_sql(
+    #         table,
+    #         self.__engine,
+    #         if_exists=if_exists,
+    #         index=index,
+    #         method=self.psql_insert_copy,
+    #     )
+    #     if commit:
+    #         self.commit()
+    #     end_time = time.time()  # get end time after insert
+    #     total_time = end_time - start_time  # calculate the time
+    #     print(f"Insert time: {total_time} seconds")  # print time
 
     def get_company_id(self, symbol):
         try:
@@ -415,6 +418,75 @@ class TimescaleStockMarketModel:
                 return None
         except Exception as e:
             self.logger.exception("Error while getting company: %s" % str(e))
+
+
+
+
+# ------------------------------ insert to sql --------------------------------
+
+def insert_companies_to_db(conn, df):
+    start = time.time()
+    sio = StringIO()
+    writer = csv.writer(sio)
+    writer.writerows(df.values)
+    sio.seek(0)
+    with conn.cursor() as c:
+        c.copy_expert(
+            sql="""
+            COPY companies (
+                symbol,
+                name,
+                mid
+            ) FROM STDIN WITH CSV""",
+        file=sio
+    )
+    conn.commit()
+    end = time.time()
+    print(f"Insert time for companies: {end - start} seconds")
+
+
+def insert_stocks_to_db(conn, df):
+    start_time = time.time()
+    sio = StringIO()
+    writer = csv.writer(sio)
+    writer.writerows(df.values)
+    sio.seek(0)
+    with conn.cursor() as c:
+        c.copy_expert(
+            sql="""
+            COPY stocks (
+                date,
+                cid,
+                value,
+                volume
+            ) FROM STDIN WITH CSV""",
+            file=sio
+        )
+    end_time = time.time()
+    print(f"Insert time for stocks of size {len(df)} in: {end_time - start_time} seconds")
+
+def insert_daystocks_to_db(conn, df):
+    sio = StringIO()
+    writer = csv.writer(sio)
+    writer.writerows(df.values)
+    sio.seek(0)
+    with conn.cursor() as c:
+        c.copy_expert(
+            sql="""
+            COPY daystocks (
+                date,
+                high,
+                low,
+                open,
+                close,
+                volume,
+                cid,
+                mean,
+                standard_deviation
+            )
+            FROM STDIN WITH CSV""",
+            file=sio
+        )
 
 
 #

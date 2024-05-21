@@ -1,4 +1,7 @@
+from typing import List
+import numpy as np
 import pandas as pd
+from sqlalchemy import Engine
 import timescaledb_model as tsdb
 import re
 from companies import insert_companies
@@ -28,7 +31,7 @@ def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict[str, int],
     
     return df, misising_companies_cid 
 
-def insert_day_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> pd.DataFrame:
+def insert_day_stocks(df: pd.DataFrame,  connection) -> pd.DataFrame:
     df_per_day = df.groupby(["symbol", "date"]).agg(
         low=("last", "min"),
         high=("last", "max"),
@@ -41,27 +44,33 @@ def insert_day_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> p
     )  
     df_per_day.reset_index(inplace=True)
     columns_to_keep = ["date", "high", "low", "open", "close", "volume", "cid", "mean", "standard_deviation"]
-    db.insert_df_to_table(df=df_per_day[columns_to_keep], table="daystocks")
+    tsdb.insert_daystocks_to_db(df=df_per_day[columns_to_keep], conn=connection)
 
-def insert_stocks(df: pd.DataFrame, db: tsdb.TimescaleStockMarketModel) -> pd.DataFrame:
+def insert_stocks(df: pd.DataFrame,  connection) -> pd.DataFrame:
     df_stocks = df.rename(columns={"last": "value"})
 
-    columns_to_keep = ["date", "value", "volume", "cid"]
+    columns_to_keep = ["date", "cid", "value", "volume"]
     df_stocks.reset_index(inplace=True)
     df_stocks.drop(columns=['date'], inplace=True)
     df_stocks = df_stocks.rename(columns={"timestamp": "date"})
     df_stocks = df_stocks[columns_to_keep]
-    db.insert_df_to_table(df=df_stocks[columns_to_keep], table="stocks")
+    tsdb.insert_stocks_to_db(df=df_stocks[columns_to_keep], conn=connection)
 
 
 
 def check_days(df: pd.DataFrame):
+    print(len(df['date'].unique()))
     return len(df['date'].unique()) 
 
 def delete_day(df: pd.DataFrame, days: list[str]):
+    print(f"Deleting data for {days}")
     df = df[~df['date'].isin(days)]
     return df
 
-def get_day(df: pd.DataFrame, days: list[str]):
-    df = df[df['date'].isin(days)]
-    return df
+def get_day(df: pd.DataFrame, day: str):
+    day_data = df[df['date'] == day]
+    return day_data
+
+
+def split_dataframe(df: pd.DataFrame, num_splits: int) -> List[pd.DataFrame]:
+    return np.array_split(df, num_splits)
