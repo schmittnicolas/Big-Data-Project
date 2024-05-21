@@ -13,10 +13,10 @@ from companies import insert_companies
 
 
 
-# db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-db = tsdb.TimescaleStockMarketModel(
- "bourse", "ricou", "localhost", "monmdp"
-)  # outside docker
+db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
+# db = tsdb.TimescaleStockMarketModel(
+#  "bourse", "ricou", "localhost", "monmdp"
+# )  # outside docker
 
 
 def read_pickle(file_path: str):
