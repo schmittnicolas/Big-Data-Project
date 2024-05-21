@@ -18,7 +18,7 @@ db_params = {
     "database": "bourse",
     "user": "ricou",
     "password": "monmdp",
-    "host": "localhost",
+    "host": "db",
 }
 
 db = tsdb.TimescaleStockMarketModel(**db_params)
@@ -41,8 +41,7 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 
 
-def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.TimescaleStockMarketModel,  batch_size = 150, 
-           number_of_days_for_insertion = 4):
+def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.TimescaleStockMarketModel,  batch_size):
     
     conn = db.get_connection()
 
@@ -81,6 +80,7 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.Times
 
         number_of_days = check_days(df_days) - 1
 
+
         days = df_days['date'].unique()[0:(number_of_days - 1)]
         insert_day_stocks(df_days, connection=conn)
         df_days = delete_day(df_days, days)
@@ -99,7 +99,7 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.Times
 if __name__ == "__main__":
     print("Started Analyzer")
     cid_mapping = companies(db)
-    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/amsterdam*", batch_size=100, number_of_days_for_insertion=4, db=db)
+    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/*", batch_size=150, db=db)
    
     
 

@@ -49,12 +49,12 @@ def parallel_insertion(df_days: pd.DataFrame):
         # Do the parallel insertion into DB
 
 
-        pool_args = split_dataframe(df=df_days, num_splits=os.cpu_count())
+        pool_args = split_dataframe(df=df_days, num_splits=6)
 
         
         logger.info("Starting parallel insertion")
 
-        pool = Pool(processes=os.cpu_count())
+        pool = Pool(processes=6)
 
         pool.map(insert_db, pool_args)
 
