@@ -466,6 +466,7 @@ def insert_stocks_to_db(conn, df):
     print(f"Insert time for stocks of size {len(df)} in: {end_time - start_time} seconds")
 
 def insert_daystocks_to_db(conn, df):
+    start_time = time.time()
     sio = StringIO()
     writer = csv.writer(sio)
     writer.writerows(df.values)
@@ -487,6 +488,7 @@ def insert_daystocks_to_db(conn, df):
             FROM STDIN WITH CSV""",
             file=sio
         )
+    print(f"Insert time for daystocks of size {len(df)} in: {time.time() - start_time} seconds")
 
 
 #

@@ -48,15 +48,17 @@ def parallel_insertion(df_days: pd.DataFrame):
         start_time = time.time()
         # Do the parallel insertion into DB
 
+        number_of_splits = os.cpu_count() - 1
 
-        pool_args = split_dataframe(df=df_days, num_splits=os.cpu_count() - 1)
+
+        pool_args = split_dataframe(df=df_days, num_splits=number_of_splits)
 
         
         logger.info("Starting parallel insertion")
 
-        pool = Pool(processes=8)
+        pool = Pool(processes=number_of_splits)
 
-        pool.map(insert_db, os.cpu_count() - 1)
+        pool.map(insert_db, pool_args)
 
         pool.close()
         pool.join()
@@ -66,6 +68,7 @@ def parallel_insertion(df_days: pd.DataFrame):
         
       
     except Exception as e:
+        print(traceback.format_exc())
         logger.error(f"Error during parallel insertion: {str(e)}")
         logger.error(traceback.format_exc())
 

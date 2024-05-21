@@ -59,11 +59,9 @@ def insert_stocks(df: pd.DataFrame,  connection) -> pd.DataFrame:
 
 
 def check_days(df: pd.DataFrame):
-    print(len(df['date'].unique()))
     return len(df['date'].unique()) 
 
 def delete_day(df: pd.DataFrame, days: list[str]):
-    print(f"Deleting data for {days}")
     df = df[~df['date'].isin(days)]
     return df
 
