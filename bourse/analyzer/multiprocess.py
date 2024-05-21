@@ -17,7 +17,7 @@ db_params = {
     "database": "bourse",
     "user": "ricou",
     "password": "monmdp",
-    "host": "localhost",
+    "host": "db",
 }
 
 logger = mylogging.getLogger(__name__, filename="/tmp/bourse_multi.log")
@@ -49,14 +49,14 @@ def parallel_insertion(df_days: pd.DataFrame):
         # Do the parallel insertion into DB
 
 
-        pool_args = split_dataframe(df=df_days, num_splits=6)
+        pool_args = split_dataframe(df=df_days, num_splits=os.cpu_count() - 1)
 
         
         logger.info("Starting parallel insertion")
 
-        pool = Pool(processes=6)
+        pool = Pool(processes=8)
 
-        pool.map(insert_db, pool_args)
+        pool.map(insert_db, os.cpu_count() - 1)
 
         pool.close()
         pool.join()

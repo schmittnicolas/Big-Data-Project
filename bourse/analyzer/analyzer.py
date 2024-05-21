@@ -99,7 +99,7 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.Times
 if __name__ == "__main__":
     print("Started Analyzer")
     cid_mapping = companies(db)
-    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/*", batch_size=150, db=db)
+    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/*", batch_size=300, db=db)
    
     
 
