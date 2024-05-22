@@ -1,38 +1,32 @@
-from concurrent.futures import ThreadPoolExecutor
-import datetime
 import glob
+from multiprocessing import Pool
 import os
 import time
 
-import dateutil
 import pandas as pd
+from multiprocess import parallel_insertion, parallel_read_pickles, get_connection
 import timescaledb_model as tsdb
-from data_pre_process import insert_day_stocks, insert_stocks, get_day, delete_day, check_days, clean_data
+from data_pre_process import insert_day_stocks, insert_stocks, delete_day, check_days, clean_data
 from companies import insert_companies
 
 
 
+# db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
+#db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "localhost", "monmdp")  # inside docker
 
-db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-# db = tsdb.TimescaleStockMarketModel(
-#  "bourse", "ricou", "localhost", "monmdp"
-# )  # outside docker
+db_params = {
+    "database": "bourse",
+    "user": "ricou",
+    "password": "monmdp",
+    "host": "db",
+}
 
+db = tsdb.TimescaleStockMarketModel(**db_params)
 
-def read_pickle(file_path: str):
-    parts = file_path.split(' ', maxsplit=1)
-    date = parts[1][:-4]
-    timestamp = dateutil.parser.parse(date)
-    return timestamp, pd.read_pickle(file_path)
-
-def parallel_read_pickles(matching_files: list[str], max_workers=None) -> pd.DataFrame:
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(read_pickle, f) for f in matching_files]
-        raw_data = pd.concat({timestamp: data for timestamp, data in [future.result() for future in futures]}, 
-                             names=['timestamp', 'symbol_index'])
-    return raw_data
 
 def companies(db: tsdb.TimescaleStockMarketModel):
+
+
     file_pattern = "./data/boursorama/**/*16:0*"
     file_pattern1 = "./data/boursorama/**/*9:0*"
 
@@ -42,15 +36,16 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
     matching_files = matching_files0 + matching_files1
     raw_data = parallel_read_pickles(matching_files, max_workers=os.cpu_count()) # read data
-    symbol_cid_mapping = insert_companies(raw_data, db)
+    symbol_cid_mapping = insert_companies(raw_data, db=db) # insert data
     return symbol_cid_mapping
 
 
 
-def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int], batch_size = 100):
+def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.TimescaleStockMarketModel,  batch_size):
+    
+    
     processed_files = set()  # Initialize an empty set to store processed file names
-    file_pattern = "./data/boursorama/*/*"
-
+   
     # Récupérer les fichiers correspondants au pattern
     file_list = glob.glob(file_pattern, recursive=True)
     file_list.sort()
@@ -61,6 +56,7 @@ def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int
     for i in range(0, len(file_list), batch_size):
         batch_files = file_list[i:i+batch_size]
     
+        start_time2 = time.time()
 
         combined_df = parallel_read_pickles(batch_files, max_workers=os.cpu_count())
         combined_df["date"] = combined_df.index.get_level_values(0).strftime("%Y-%m-%d")
@@ -69,32 +65,54 @@ def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int
         if symbol_cid_mapping_updated != None:
             symbol_cid_mapping.update(symbol_cid_mapping_updated)
 
-        insert_stocks(combined_df, db)
+        end_time2 = time.time()
+
+
+        print(f"Pre-Processed done in {end_time2 - start_time2:.2f} seconds for {len(batch_files)} files.")
+
+        parallel_insertion(combined_df)
+
 
         df_days = pd.concat([df_days, combined_df])
 
-        number_of_days = check_days(df_days)
 
-        if (number_of_days != 1):
-            days = df_days['date'].unique()[0:(number_of_days-1)]
-            insert = get_day(df_days, days)
-            df_days = delete_day(df_days, days)
-            insert_day_stocks(insert, db)
+        number_of_days = check_days(df_days) - 1
 
-        # Add processed file names to the set
+
+        days = df_days['date'].unique()[0:number_of_days]
+        print(f"Inserting {days} days.")
+        try:
+            connection_day = get_connection()
+            insert_day_stocks(df_days, connection=connection_day)
+        except Exception as e:
+            print(e)
+        finally:
+            connection_day.commit()
+            connection_day.close()
+        df_days = delete_day(df_days, days)
+        
+        
         processed_files.update(batch_files)
-
-        # Clear the data frame to free up memory
-        combined_df = None
     
+    print(f"final insertion is {df_days} ")
+    try:
+        conn = get_connection()
+        insert_stocks(df_days, connection=conn)
+        insert_day_stocks(df_days, connection=conn)
+    except Exception as e:
+            print(e)
+    finally:
+        conn.commit()
+        conn.close()
     end_time = time.time()
     total_time = end_time - start_time
     
     print(f"Processed {len(processed_files)} files in {total_time:.2f} seconds for {len(symbol_cid_mapping)} companies.")
 
-
 if __name__ == "__main__":
     print("Started Analyzer")
-    t: dict[str, int] = companies(db)
-    stocks(db, t)
-    print("Finished Analyzer")
+    cid_mapping = companies(db)
+    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/*", batch_size=150, db=db)
+   
+    
+
