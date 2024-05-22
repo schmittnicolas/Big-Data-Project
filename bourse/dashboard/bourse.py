@@ -31,22 +31,18 @@ market_options = [{"label": market, "value": market} for market in markets]
 START_DATE = "2019-01-01"
 END_DATE = "2024-12-31"
 
+
 time_intervals = {
-    "1D": 1,
-    "1W": 7,
-    "1M": 30,
-    "3M": 90,
-    "6M": 182,
-    "1Y": 365,
-    "2Y": 730,
-    "5Y": 1825,
-    "10Y": 3650,
+    1: ("1D", 1),
+    2: ("1W", 7),
+    3: ("1M", 30),
+    4: ("3M", 90),
+    5: ("6M", 182),
+    6: ("1Y", 365),
+    7: ("2Y", 730),
+    8: ("5Y", 1825),
+    9: ("10Y", 3650),
 }
-
-time_interval_options = [
-    {"label": key, "value": value} for key, value in time_intervals.items()
-]
-
 
 app = dash.Dash(
     __name__,
@@ -159,41 +155,77 @@ app.layout = html.Div(
                     id="graph-container",
                     children=[
                         html.Div(
+                            dcc.Tabs(
+                                [
+                                    dcc.Tab(
+                                        label="Date Range",
+                                        value="range",
+                                        children=[
+                                            html.Div(
+                                                dcc.DatePickerRange(
+                                                    id="date-picker-range",
+                                                    start_date=START_DATE,
+                                                    end_date=END_DATE,
+                                                    min_date_allowed=START_DATE,
+                                                    max_date_allowed=END_DATE,
+                                                    initial_visible_month="2019-01-01",
+                                                    display_format="YYYY-MM-DD",
+                                                    style={
+                                                        "margin": "auto",
+                                                    },
+                                                ),
+                                                style={
+                                                    "display": "flex",
+                                                    "justifyContent": "center",
+                                                },
+                                            ),
+                                        ],
+                                        style={
+                                            "padding": "6px",
+                                        },
+                                    ),
+                                    dcc.Tab(
+                                        label="Interval",
+                                        value="interval",
+                                        children=html.Div(
+                                            [
+                                                html.Div(
+                                                    dcc.Slider(
+                                                        min=1,
+                                                        max=9,
+                                                        step=1,
+                                                        marks={
+                                                            i: time_intervals[i][0]
+                                                            for i in time_intervals
+                                                        },
+                                                        value=1,
+                                                        id="time-interval",
+                                                        updatemode="drag",
+                                                    ),
+                                                    style={"width": "300px"},
+                                                ),
+                                                dcc.DatePickerSingle(
+                                                    id="date-picker-single",
+                                                    date=END_DATE,
+                                                    display_format="YYYY-MM-DD",
+                                                ),
+                                            ],
+                                            style={
+                                                "display": "flex",
+                                                "justifyContent": "center",
+                                                "alignItems": "center",
+                                            },
+                                        ),
+                                        style={
+                                            "padding": "6px",
+                                        },
+                                    ),
+                                ],
+                                id="date-tabs",
+                                style={"marginBottom": "20px", "width": "100%"},
+                            ),
+                            style={"marginBottom": "20px"},
                             id="date-picker-container",
-                            children=[
-                                dcc.DatePickerRange(
-                                    id="date-picker-range",
-                                    start_date=START_DATE,
-                                    end_date=END_DATE,
-                                    min_date_allowed=START_DATE,
-                                    max_date_allowed=END_DATE,
-                                    initial_visible_month="2019-01-01",
-                                    display_format="YYYY-MM-DD",
-                                    style={"marginRight": "20px"},
-                                ),
-                                daq.ToggleSwitch(
-                                    id="use-date-picker-range",
-                                    value=False,
-                                    style={"marginRight": "20px"},
-                                ),
-                                dcc.Dropdown(
-                                    id="time-interval",
-                                    options=time_interval_options,
-                                    value=1,
-                                    clearable=False,
-                                    style={"marginRight": "20px"},
-                                ),
-                                dcc.DatePickerSingle(
-                                    id="date-picker-single",
-                                    date=END_DATE,
-                                    display_format="YYYY-MM-DD",
-                                ),
-                            ],
-                            style={
-                                "marginBottom": "20px",
-                                "display": "flex",
-                                "alignItems": "center",
-                            },
                         ),
                         dash_table.DataTable(
                             id="raw-data-table",
@@ -242,7 +274,7 @@ app.layout = html.Div(
         Input("company-dropdown", "value"),
         Input("selected-company-dropdown", "value"),
         Input("graph-type", "value"),
-        Input("use-date-picker-range", "value"),
+        Input("date-tabs", "value"),
         Input("date-picker-range", "start_date"),
         Input("date-picker-range", "end_date"),
         Input("date-picker-single", "date"),
@@ -254,7 +286,7 @@ def update_graph(
     company_ids,
     selected_company_id,
     graph_type,
-    use_date_picker_range,
+    active_date_tab,
     start_date,
     end_date,
     single_date,
@@ -276,9 +308,9 @@ def update_graph(
         if option["value"] in company_ids
     ]
 
-    if use_date_picker_range:
+    if active_date_tab == "interval":
         end_date = single_date
-        days = time_interval
+        days = time_intervals[time_interval][1]
         start_date = (
             datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=days)
         ).strftime("%Y-%m-%d")
@@ -299,19 +331,6 @@ def update_graph(
 
     raw_data = stocks.generate_raw_data_table(engine, company_ids, start_date, end_date)
     return figure, raw_data, company_options, selected_company_options
-
-
-@app.callback(
-    Output("date-picker-range", "disabled"),
-    Output("date-picker-single", "disabled"),
-    Output("time-interval", "disabled"),
-    Input("use-date-picker-range", "value"),
-)
-def switch_date_picker(use_date_picker_range):
-    if use_date_picker_range:
-        return True, False, False
-    else:
-        return False, True, True
 
 
 if __name__ == "__main__":
