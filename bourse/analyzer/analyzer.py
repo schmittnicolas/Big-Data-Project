@@ -4,7 +4,7 @@ import os
 import time
 
 import pandas as pd
-from multiprocess import parallel_insertion, parallel_read_pickles
+from multiprocess import parallel_insertion, parallel_read_pickles, get_connection
 import timescaledb_model as tsdb
 from data_pre_process import insert_day_stocks, insert_stocks, delete_day, check_days, clean_data
 from companies import insert_companies
@@ -43,8 +43,6 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.TimescaleStockMarketModel,  batch_size):
     
-    conn = db.get_connection()
-
     
     processed_files = set()  # Initialize an empty set to store processed file names
    
@@ -77,22 +75,35 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.Times
 
         df_days = pd.concat([df_days, combined_df])
 
-        import pdb; pdb.set_trace()
 
         number_of_days = check_days(df_days) - 1
 
 
         days = df_days['date'].unique()[0:number_of_days]
         print(f"Inserting {days} days.")
-        insert_day_stocks(df_days, connection=conn)
+        try:
+            connection_day = get_connection()
+            insert_day_stocks(df_days, connection=connection_day)
+        except Exception as e:
+            print(e)
+        finally:
+            connection_day.commit()
+            connection_day.close()
         df_days = delete_day(df_days, days)
         
         
         processed_files.update(batch_files)
     
     print(f"final insertion is {df_days} ")
-    insert_stocks(df_days, connection=conn)
-    insert_day_stocks(df_days, connection=conn)
+    try:
+        conn = get_connection()
+        insert_stocks(df_days, connection=conn)
+        insert_day_stocks(df_days, connection=conn)
+    except Exception as e:
+            print(e)
+    finally:
+        conn.commit()
+        conn.close()
     end_time = time.time()
     total_time = end_time - start_time
     
@@ -101,7 +112,7 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.Times
 if __name__ == "__main__":
     print("Started Analyzer")
     cid_mapping = companies(db)
-    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/amsterdam*", batch_size=300, db=db)
+    stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/2019/*", batch_size=150, db=db)
    
     
 
