@@ -544,31 +544,6 @@ li {
     margin-bottom: 1rem;
 }
 
-
-/* Tables
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-table {
-    border-collapse: collapse;
-}
-
-th,
-td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #E1E1E1;
-}
-
-th:first-child,
-td:first-child {
-    padding-left: 0;
-}
-
-th:last-child,
-td:last-child {
-    padding-right: 0;
-}
-
-
 /* Spacing
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 button,
@@ -784,6 +759,7 @@ hr {
     margin-bottom: 6.6rem;
 }
 
+
 /* Dropdown
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .Select-value {
@@ -821,62 +797,8 @@ hr {
     border-radius: 4px !important;
 }
 
-/* DatePicker
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-
-.DateInput {
-  color: #7fafdf !important;
-}
-
-.DateInput_input {
-  background-color: #252e3f !important;
-  border: 1px solid #7fafdf !important;
-  border-radius: 4px !important;
-  color: #7fafdf !important;
-}
-
-.DateInput_input__focused {
-  border-color: #7fafdf !important;
-  box-shadow: 0 0 0 2px rgba(127, 175, 223, 0.3) !important;
-}
-
-.DateRangePickerInput {
-  background-color: #252e3f !important;
-  border: 1px solid #7fafdf !important;
-  border-radius: 4px !important;
-}
-
-.DateRangePickerInput__arrow {
-  color: #7fafdf !important;
-}
-
-.DayPicker {
-  background-color: #252e3f !important;
-  border: 1px solid #7fafdf !important;
-}
-
-.DayPicker__day:not(.DayPicker__day--outside) {
-  border-radius: 0 !important;
-}
-
-.DayPicker__day--today {
-  color: #7fafdf !important;
-  font-weight: bold !important;
-}
-
-.DayPicker__day--selected:not(.DayPicker__day--disabled):not(.DayPicker__day--outside) {
-  background-color: #7fafdf !important;
-  color: #252e3f !important;
-}
-
-.DayPicker__day--hovering:not(.DayPicker__day--disabled):not(.DayPicker__day--outside) {
-  background-color: rgba(127, 175, 223, 0.3) !important;
-  color: #7fafdf !important;
-}
-
-.CalendarDay__default:hover {
-  background-color: rgba(127, 175, 223, 0.3) !important;
-  color: #7fafdf !important;
+.Select-input input {
+    color: white !important;
 }
 
 /* Tabs
@@ -910,54 +832,39 @@ hr {
   padding: 5px !important;
 }
 
-/* ToggleSwitch
+* DatePicker
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
+.DateInput {
+  color: #7fafdf !important;
 }
 
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.DateInput_input {
+  background-color: #252e3f !important;
+  border: 1px solid #7fafdf !important;
+  border-radius: 4px !important;
+  color: #7fafdf !important;
 }
 
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #252e3f;
-  border: 1px solid #7fafdf;
-  border-radius: 24px;
-  transition: 0.4s;
+.DateInput_input__focused {
+  border-color: #7fafdf !important;
+  box-shadow: 0 0 0 2px rgba(127, 175, 223, 0.3) !important;
 }
 
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 2px;
-  bottom: 2px;
-  background-color: #7fafdf;
-  border-radius: 50%;
-  transition: 0.4s;
+.DateRangePickerInput {
+  background-color: #252e3f !important;
+  border: 1px solid #7fafdf !important;
+  border-radius: 4px !important;
 }
 
-input:checked + .toggle-slider {
-  background-color: #7fafdf;
+.DateRangePickerInput__arrow {
+  color: #7fafdf !important;
 }
 
-input:checked + .toggle-slider:before {
-  transform: translateX(26px);
-  background-color: #252e3f;
+.SingleDatePickerInput {
+  background-color: #252e3f !important;
+  border: 1px solid #7fafdf !important;
+  border-radius: 4px !important;
 }
 
 /* Placement
@@ -1012,8 +919,6 @@ div, svg {
   color: white;
   border-color: white;
 }
-
-
 
 body {
   background-color: #07192c;

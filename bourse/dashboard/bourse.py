@@ -52,7 +52,7 @@ app = dash.Dash(
     __name__,
     title="BOURSE",
     suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.LUX],
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 
 server = app.server
@@ -63,7 +63,7 @@ app.layout = html.Div(
         html.Div(
             id="header",
             children=[
-                html.H4(children="Bourse App"),
+                html.H4(children="Bourse Application"),
                 html.P(
                     id="description",
                     children="Navigate through the different markets and companies to visualize their stock data.",
@@ -159,7 +159,8 @@ app.layout = html.Div(
                     id="graph-container",
                     children=[
                         html.Div(
-                            [
+                            id="date-picker-container",
+                            children=[
                                 dcc.DatePickerRange(
                                     id="date-picker-range",
                                     start_date=START_DATE,
