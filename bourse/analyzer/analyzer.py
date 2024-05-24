@@ -13,11 +13,7 @@ from companies import insert_companies
 
 
 
-db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")  # inside docker
-# db = tsdb.TimescaleStockMarketModel(
-#  "bourse", "ricou", "localhost", "monmdp"
-# )  # outside docker
-
+db = tsdb.TimescaleStockMarketModel("bourse", "ricou", "db", "monmdp")
 
 def read_pickle(file_path: str):
     parts = file_path.split(' ', maxsplit=1)
@@ -47,7 +43,7 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 
 
-def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int], batch_size = 100):
+def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int], batch_size = 200):
     processed_files = set()  # Initialize an empty set to store processed file names
     file_pattern = "./data/boursorama/*/*"
 

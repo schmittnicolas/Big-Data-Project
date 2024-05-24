@@ -370,12 +370,12 @@ class TimescaleStockMarketModel:
 
             sql = "COPY {} ({}) FROM STDIN WITH CSV".format(table_name, columns)
             cur.copy_expert(sql=sql, file=s_buf)
+            s_buf.close()
 
     def insert_df_to_table(
         self,
         df,
         table,
-        commit=False,
         if_exists="append",
         index=False,
     ):
@@ -396,11 +396,10 @@ class TimescaleStockMarketModel:
             index=index,
             method=self.psql_insert_copy,
         )
-        if commit:
-            self.commit()
+        self.commit()
         end_time = time.time()  # get end time after insert
         total_time = end_time - start_time  # calculate the time
-        print(f"Insert time: {total_time} seconds")  # print time
+        print(f"Insert for {table} of size {len(df)}: {total_time} seconds")  # print time
 
     def get_company_id(self, symbol):
         try:
