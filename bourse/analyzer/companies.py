@@ -12,6 +12,7 @@ MARKET_IDS = {
     "xetra": 9,
     "bruxelle": 10,
     "paris": 11,
+    "nasdaq": 12,
 }
 
 
