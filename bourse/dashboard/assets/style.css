@@ -929,3 +929,27 @@ body {
   overflow-y: scroll;
   width: 100%;
 }
+
+/* Data Table
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #252e3f;
+    color: #7fafdf;
+  }
+  
+  th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #7fafdf;
+  }
+  
+  th {
+    background-color: #1d2731;
+    font-size: 1.4rem; /* Adjust this value to change the header font size */
+  }
+  
+  tr:hover {
+    background-color: rgba(127, 175, 223, 0.3);
+  }

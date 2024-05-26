@@ -230,7 +230,12 @@ app.layout = html.Div(
                         dash_table.DataTable(
                             id="raw-data-table",
                             columns=[
-                                {"name": col, "id": col}
+                                {
+                                    "name": (
+                                        col if col != "standard_deviation" else "std"
+                                    ),
+                                    "id": col,
+                                }
                                 for col in [
                                     "date",
                                     "company",
@@ -240,13 +245,13 @@ app.layout = html.Div(
                                     "close",
                                     "volume",
                                     "mean",
-                                    "std",
+                                    "standard_deviation",
                                 ]
                             ],
-                            style_cell={
-                                "backgroundColor": "#252e3f",
-                                "color": "white",
-                                "border": "1px solid #7fafdf",
+                            style_header={
+                                "whiteSpace": "normal",
+                                "height": "auto",
+                                "textAlign": "left",
                             },
                             style_table={
                                 "overflowY": "scroll",
