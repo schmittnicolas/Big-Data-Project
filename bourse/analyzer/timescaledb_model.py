@@ -445,6 +445,8 @@ def insert_companies_to_db(conn, df):
         file=sio
     )
     conn.commit()
+    conn.close()
+    sio.close()
     end = time.time()
     print(f"Insert time for companies: {end - start} seconds")
 
@@ -467,6 +469,7 @@ def insert_stocks_to_db(conn, df):
             file=sio
         )
     end_time = time.time()
+    sio.close()
     print(f"Insert time for stocks of size {len(df)} in: {end_time - start_time} seconds")
 
 def insert_daystocks_to_db(conn, df):
@@ -492,6 +495,7 @@ def insert_daystocks_to_db(conn, df):
             FROM STDIN WITH CSV""",
             file=sio
         )
+    sio.close()
     print(f"Insert time for daystocks of size {len(df)} in: {time.time() - start_time} seconds")
 
 
