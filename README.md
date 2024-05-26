@@ -3,7 +3,7 @@
 ## Prérequis
 
 - 32 Go de stockage disponible
-- Assez de RAM
+- Assez de RAM (Le projet nécessite une quantité importante de RAM. Si possible, veuillez ouvrir uniquement des terminal pour les container et éviter d'exécuter d'autres processus comme Firefox ou autres applications.)
 - Se placer dans `/srv/libvirt-workdir` sur les machines de l’école et cloner le projet
 
 ## Lancement
