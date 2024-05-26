@@ -5,6 +5,17 @@ from plotly.offline import iplot
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
+layout = dict(
+    hovermode="closest",
+    margin=dict(r=0, l=0, t=0, b=0),
+    plot_bgcolor="#252e3f",
+    paper_bgcolor="#252e3f",
+    xaxis=dict(gridcolor="#7fafdf", gridwidth=1, showgrid=True, color="white"),
+    yaxis=dict(gridcolor="#7fafdf", gridwidth=1, showgrid=True, color="white"),
+    legend=dict(font=dict(color="white")),
+    font=dict(color="white"),
+)
+
 
 def generate_raw_data_table(engine, company_ids, start_date, end_date):
     data = []
@@ -46,6 +57,8 @@ def generate_raw_data_table(engine, company_ids, start_date, end_date):
             ]
         ]
         table_data = table_data.sort_values(by=["date", "company"])
+        table_data["date"] = table_data["date"].dt.strftime("%Y-%m-%d")
+        table_data = table_data.round(2)
         return table_data.to_dict("records")
     else:
         return []
@@ -73,6 +86,8 @@ def generate_line_graph(engine, company_ids, start_date, end_date):
     figure = go.Figure(data=data)
     figure.update_yaxes(type="log")
 
+    figure.update_layout(layout)
+
     return figure
 
 
@@ -95,7 +110,9 @@ def generate_candlestick_graph(engine, company_ids, start_date, end_date):
                 )
             )
 
-    return go.Figure(data=data)
+    figure = go.Figure(data=data)
+    figure.update_layout(layout)
+    return figure
 
 
 def generate_bollinger_graph(engine, company_id, start_date, end_date, window=30):
@@ -111,7 +128,7 @@ def generate_bollinger_graph(engine, company_id, start_date, end_date, window=30
     )
 
     if df.empty:
-        return go.Figure()
+        return go.Figure().update_layout(layout)
 
     df["sma"] = df["close"].rolling(window).mean()
     df["std"] = df["close"].rolling(window).std(ddof=0)
@@ -186,5 +203,5 @@ def generate_bollinger_graph(engine, company_id, start_date, end_date, window=30
 
     # Remove range slider; (short time frame)
     fig.update(layout_xaxis_rangeslider_visible=False)
-    
+    fig.update_layout(layout)
     return fig
