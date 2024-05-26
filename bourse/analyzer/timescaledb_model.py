@@ -445,7 +445,6 @@ def insert_companies_to_db(conn, df):
         file=sio
     )
     conn.commit()
-    conn.close()
     sio.close()
     end = time.time()
     print(f"Insert time for companies: {end - start} seconds")

@@ -58,11 +58,14 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str,  batch_size):
     
         start_time2 = time.time()
 
+        import pdb; pdb.set_trace()
+
         combined_df = parallel_read_pickles(batch_files, max_workers=os.cpu_count())
         combined_df["date"] = combined_df.index.get_level_values(0).strftime("%Y-%m-%d")
         combined_df = clean_data(combined_df, symbol_cid_mapping)
 
-    
+
+
         end_time2 = time.time()
 
 
@@ -110,6 +113,7 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str,  batch_size):
 if __name__ == "__main__":
     print("Started Analyzer")
     cid_mapping = companies(db)
+    db.__connection.close()
     stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/*/*", batch_size=150)
    
     
