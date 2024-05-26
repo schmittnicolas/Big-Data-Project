@@ -35,8 +35,8 @@
 
 ### Selection des actions (tableau en haut à gauche)
 
-- Choix des marchés
-- Choix des actions
+- Choix des marchés (plusieurs choix possibles, utiliser la croix pour retirer un choix en scrollant à l'intérieur du dropdown)
+- Choix des actions (plusieurs choix possibles, Utiliser la croix pour retirer un choix en scrollant à l'intérieur du dropdown)
 - Choix de l'action pour les bandes de Bollinger
 
 
