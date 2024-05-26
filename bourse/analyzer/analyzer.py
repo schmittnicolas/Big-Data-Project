@@ -43,7 +43,7 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 
 
-def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int], batch_size = 150):
+def stocks(db: tsdb.TimescaleStockMarketModel, symbol_cid_mapping: dict[str, int], batch_size = 100):
     processed_files = set()  # Initialize an empty set to store processed file names
     file_pattern = "./data/boursorama/*/*"
 
