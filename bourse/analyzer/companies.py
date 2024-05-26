@@ -38,4 +38,4 @@ def get_market_data(symbol: str) -> str:
     if symbol[:3] == "1rA":
         return MARKET_IDS["amsterdam"]
     else:
-        return MARKET_IDS["xetra"]
+        return MARKET_IDS["nasdaq"]
