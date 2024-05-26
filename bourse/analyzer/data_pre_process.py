@@ -9,18 +9,12 @@ from companies import insert_companies
 def remove_non_numeric(x: str):
     return re.sub(r"[() cs]+", "", x)
 
-def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict[str, int], 
-               db: tsdb.TimescaleStockMarketModel) -> tuple[pd.DataFrame, dict[str, int] | None]:
+def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict[str, int], ) -> tuple[pd.DataFrame, dict[str, int] | None]:
     df = df[df["volume"] > 0]
-    misising_companies_cid = None
     df["cid"] = df.index.get_level_values(1).map(symbol_cid_mapping)
-    missing_value = df[df["cid"].isna()]
-    if len(missing_value) > 0:
-        missing_companies = missing_value.groupby("symbol").agg(name=(("name", lambda x: x.iloc[0])))
-        misising_companies_cid = insert_companies(missing_companies, db)
-        symbol_cid_mapping.update(misising_companies_cid)
-        df["cid"] = df.index.get_level_values(1).map(symbol_cid_mapping).astype(int)
-        print(f"Missing companies cid {misising_companies_cid}")
+    if df['cid'].isna().any():
+        df.dropna(subset=["cid"], inplace=True)
+        df['cid'] = df['cid'].astype(int)
     df["last"] = (
         df["last"]
         .astype(str)
@@ -29,7 +23,7 @@ def clean_data(df: pd.DataFrame, symbol_cid_mapping: dict[str, int],
         .round(2)
     )
     
-    return df, misising_companies_cid 
+    return df 
 
 def insert_day_stocks(df: pd.DataFrame,  connection) -> pd.DataFrame:
     df_per_day = df.groupby(["symbol", "date"]).agg(

@@ -164,6 +164,10 @@ class TimescaleStockMarketModel:
             cursor.execute(
                 "INSERT INTO markets (id, name, alias) VALUES (11,'Paris','paris');"
             )
+            cursor.execute(
+                "INSERT INTO markets (id, name, alias) VALUES (12,'NASDAQ','nasdaq');"
+            )
+
         except Exception as e:
             self.logger.exception("SQL error: %s" % e)
         self.__connection.commit()

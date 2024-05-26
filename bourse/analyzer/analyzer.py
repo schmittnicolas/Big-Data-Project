@@ -41,7 +41,7 @@ def companies(db: tsdb.TimescaleStockMarketModel):
 
 
 
-def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.TimescaleStockMarketModel,  batch_size):
+def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str,  batch_size):
     
     
     processed_files = set()  # Initialize an empty set to store processed file names
@@ -60,11 +60,9 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str, db: tsdb.Times
 
         combined_df = parallel_read_pickles(batch_files, max_workers=os.cpu_count())
         combined_df["date"] = combined_df.index.get_level_values(0).strftime("%Y-%m-%d")
-        combined_df, symbol_cid_mapping_updated = clean_data(combined_df, symbol_cid_mapping, db)
+        combined_df = clean_data(combined_df, symbol_cid_mapping)
 
-        if symbol_cid_mapping_updated != None:
-            symbol_cid_mapping.update(symbol_cid_mapping_updated)
-
+    
         end_time2 = time.time()
 
 

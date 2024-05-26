@@ -48,7 +48,7 @@ def parallel_insertion(df_days: pd.DataFrame):
         start_time = time.time()
         # Do the parallel insertion into DB
 
-        number_of_splits = 6
+        number_of_splits = 4
 
 
         pool_args = split_dataframe(df=df_days, num_splits=number_of_splits)
