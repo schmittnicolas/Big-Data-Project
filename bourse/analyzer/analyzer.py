@@ -113,7 +113,7 @@ def stocks(symbol_cid_mapping: dict[str, int], file_pattern: str,  batch_size):
 if __name__ == "__main__":
     print("Started Analyzer")
     cid_mapping = companies(db)
-    db.__connection.close()
+    db.get_connection().close()
     stocks(symbol_cid_mapping=cid_mapping, file_pattern="./data/boursorama/*/*", batch_size=150)
    
     
