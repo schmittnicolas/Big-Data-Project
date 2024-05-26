@@ -93,7 +93,7 @@ class TimescaleStockMarketModel:
                   date TIMESTAMPTZ,
                   cid SMALLINT,
                   value FLOAT4,
-                  volume INT
+                  volume BIGINT
                 );"""
             )
             cursor.execute("""SELECT create_hypertable('stocks', by_range('date'));""")
