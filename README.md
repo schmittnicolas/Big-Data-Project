@@ -1,29 +1,29 @@
-# Dash Application in Python to visualize bourse data
+# Dash Application in Python for Visualizing Stock Market Data
 
-## Prérequis
+## Prerequisites
 
-- 32 Go de stockage disponible
-- Assez de RAM (Le projet nécessite une quantité importante de RAM. Si possible, veuillez ouvrir uniquement des terminal pour les container et éviter d'exécuter d'autres processus comme Firefox ou autres applications.)
-- Se placer dans `/srv/libvirt-workdir` sur les machines de l’école et cloner le projet
+- 32 GB of available storage
+- Sufficient RAM (The project requires a significant amount of RAM. If possible, please open only terminal windows for containers and avoid running other processes like Firefox or other applications.)
+- Navigate to `/srv/libvirt-workdir` on the school machines and clone the project.
 
-## Lancement
+## Launching the Application
 
-- Se placer dans le directory `docker`
-1. Démarrer le service de base de données :
+- Navigate to the `docker` directory.
+1. Start the database service:
    
    ```sh
    docker compose up db
    ```
-   Attendre que le service db soit prêt.
+   Wait for the database service to be ready.
 
-2. Démarrer le service d'analyzer:
+2. Start the analyzer service:
    
    ```sh
    docker compose up analyzer
    ```
-   Ce processus prend environ 50 minutes sur les machines de l'école
+   This process takes about 50 minutes on the school machines.
 
-3. Une fois l'analyse terminée, démarrer le tableau de bord :
+3. Once the analysis is complete, start the dashboard:
 
    ```sh
    docker compose up dashboard
@@ -32,47 +32,43 @@
 ## Analyzer
 
 ### Market 
-Apres beacoup de recherches sur le site de Boursorma nous avons pu identifier des patterns pour chaque marché: 
- - Paris: Les symboles qui commencent par "1rP" ou "1rEP" 
- - Bruxelles: Les symboles qui commencent par "FF1"
- - Amsterdam: Les symboles qui commencent par "1rA"
- - Nasdaq: Tous les autres symboles qui ne correspondent pas aux préfixes mentionnés
-Évidemment, cela est basé sur nos observations personnelles. Nous n'avons rien trouvé de véritablement établi, notamment pour le marché du NASDAQ, dont les données représentent environ 70 % du total et se trouvent dans les fichiers commençant par "amsterdam*".
+After extensive research on the Boursorama website, we identified patterns for each market:
+ - Paris: Symbols that start with "1rP" or "1rEP"
+ - Brussels: Symbols that start with "FF1"
+ - Amsterdam: Symbols that start with "1rA"
+ - Nasdaq: All other symbols that do not match the aforementioned prefixes
 
-### Data cleaning: 
+Note that this is based on our personal observations. We couldn't find any established patterns, particularly for the NASDAQ market, which accounts for about 70% of the data and is found in files starting with "amsterdam*".
 
-Nous avons choisi de supprimer tous les volumes égaux à 0, car cela nous semblait étrange d'avoir des volumes égaux à 0 en plein milieu de la journée.
+### Data Cleaning
 
-### Companies 
+We chose to remove all records with volumes equal to 0, as it seemed unusual to have zero volumes in the middle of the trading day.
 
-Nous avons conservé toutes les entreprises, y compris celles qui n'apparaissaient qu'une seule fois au cours des cinq dernières années.
+### Companies
+
+We retained all companies, including those that appeared only once over the past five years.
 
 ### Insertion
 
-Le temps d'insertion est d'environ 50 minutes. Je tiens à souligner que nous avons développé une version en multi-processing extrêmement performante, mais qu'il est impossible de la faire fonctionner sur les PC de l'EPITA.
-
+The data insertion process takes approximately 50 minutes. I would like to mention that we developed an extremely efficient multi-processing version, but it's impossible to run it on the EPITA PCs.
 
 ## Dashboard
 
-### Selection des actions (tableau en haut à gauche)
+### Stock Selection (Top-Left Panel)
 
-- Choix des marchés (plusieurs choix possibles, utiliser la croix pour retirer un choix en scrollant à l'intérieur du dropdown)
-- Choix des actions (plusieurs choix possibles, Utiliser la croix pour retirer un choix en scrollant à l'intérieur du dropdown)
-- Choix de l'action pour les bandes de Bollinger
+- Market selection (multiple choices allowed; use the cross icon to remove a choice by scrolling inside the dropdown)
+- Stock selection (multiple choices allowed; use the cross icon to remove a choice by scrolling inside the dropdown)
+- Stock selection for Bollinger Bands
 
+### Date Selection (Right Panel)
 
-### Choix des dates (tableau droite)
+- Start date and end date
+- Additional feature: End date and slider to choose the interval (1D, 1W, 1M, 3M, 6M, 1Y, 5Y, 10Y)
 
-- Date de début et date de fin
-- Fonctionnalité additionnelle: Date de fin et slider pour choisir l'intervalle (1D, 1W, 1M, 3M, 6M, 1Y, 5Y, 10Y)
+### Graph Selection (Left Panel)
 
+- 3 selectable graphs with tabs
 
-### Choix des graphes (tableau gauche)
+### Summary Table (Right Panel)
 
-- 3 graphes sélectionnables avec des onglets
-
-
-### Tableau récapitulatif à droite
-
-- Affichage des données récapitulatives
-
+- Display of summary data
