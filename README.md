@@ -1,5 +1,7 @@
 # Dash Application in Python for Visualizing Stock Market Data
 
+The needed data can be found here https://www.lrde.epita.fr/~ricou/pybd/projet/boursorama.tar
+
 ## Prerequisites
 
 - 32 GB of available storage
