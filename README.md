@@ -1,10 +1,11 @@
 # Dash Application in Python for Visualizing Stock Market Data
-
+![bollinger](https://github.com/user-attachments/assets/c753ac72-5779-4a94-9f21-9bc9626bfae7)
 The needed data can be found here https://www.lrde.epita.fr/~ricou/pybd/projet/boursorama.tar
 
 ## Prerequisites
 
 - 32 GB of available storage
+
 - Sufficient RAM (The project requires a significant amount of RAM. If possible, please open only terminal windows for containers and avoid running other processes like Firefox or other applications.)
 - Navigate to `/srv/libvirt-workdir` on the school machines and clone the project.
 
