@@ -53,7 +53,11 @@ We retained all companies, including those that appeared only once over the past
 
 ### Insertion
 
-The data insertion process takes approximately 50 minutes. I would like to mention that we developed an extremely efficient multi-processing version, but it's impossible to run it on the EPITA PCs.
+The data insertion process takes approximately 50 minutes. We would like to mention that we developed an extremely efficient multi-processing version, but it's impossible to run it on the EPITA PCs.
+
+### Database
+![TimeScaleDB drawio1](https://github.com/user-attachments/assets/dbe779a1-99d2-4587-b039-a4bb7e9834dc)
+
 
 ## Dashboard
 
